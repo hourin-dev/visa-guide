@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>법무법인 대림 - 비자 사건 수임 분석 시스템 v3.1</title>
+    <title>법무법인 대림 - 비자 사건 수임 분석 시스템 v3.2</title>
     <style>
         :root { 
             --primary: #1a252f; /* 네이비 */
@@ -116,7 +116,9 @@
 
         #result-box { 
             margin-top: 30px; display: none; 
-            border: 1px solid #ddd; border-radius: 8px; overflow: hidden;
+            border: 1px solid #ddd; border-radius: 8px; 
+            /* overflow: hidden 제거 또는 auto로 변경하여 긴 내용 지원 */
+            overflow: visible; 
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
         #result-header { 
@@ -124,10 +126,12 @@
             border-bottom: 1px solid #ddd; 
             font-weight: bold; color: var(--primary); 
             display: flex; justify-content: space-between; align-items: center;
+            border-radius: 8px 8px 0 0;
         }
         #result-content { 
             padding: 30px; line-height: 1.8; font-size: 1rem; color: #2c3e50; 
             background: white;
+            border-radius: 0 0 8px 8px;
         }
         
         #result-content h1, #result-content h2, #result-content h3 { color: var(--primary); margin-top: 1.5em; margin-bottom: 0.5em; }
@@ -147,8 +151,8 @@
 
 <div class="container">
     <div class="header">
-        <h2>⚖️ 법무법인 대림 외국인 사건 분석기 <span class="badge">v3.1</span></h2>
-        <p>Gemini AI 순차 탐색 & PDF 정밀 분석</p>
+        <h2>⚖️ 법무법인 대림 외국인 사건 분석기 <span class="badge">v3.2</span></h2>
+        <p>Gemini AI 순차 탐색 & PDF 정밀 분석 (Full Report)</p>
     </div>
 
     <div class="content">
@@ -222,7 +226,7 @@
         </div>
 
         <div class="footer">
-            법무법인 대림 외국인 사건 분석 시스템 <strong>ver 3.1</strong><br>
+            법무법인 대림 외국인 사건 분석 시스템 <strong>ver 3.2</strong><br>
             관리자: 사무장 이규희 | 문의: 02-0000-0000
         </div>
     </div>
@@ -330,7 +334,7 @@
         }
     }
 
-    // --- 4. Main Analysis Logic (Loop Strategy from Original Code) ---
+    // --- 4. Main Analysis Logic (Updated Max Tokens) ---
     async function runAnalysis() {
         const apiKey = document.getElementById('apiKey').value.trim();
         const visa = document.getElementById('visaType').value;
@@ -378,22 +382,18 @@
         `;
 
         try {
-            // [원래 로직 복원] 1. 사용 가능한 모델 탐색
             log("🔍 사용 가능한 모델 리스트를 조회합니다...");
             const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
             const listData = await listRes.json();
             
             if(listData.error) throw new Error(listData.error.message);
 
-            // generateContent 기능을 지원하는 모델 필터링
-            // (최신 모델을 먼저 시도하도록 정렬: gemini 포함된 것 우선)
             const usableModels = listData.models.filter(m => m.supportedGenerationMethods.includes("generateContent"))
                                                 .sort((a, b) => b.name.includes("gemini") - a.name.includes("gemini"));
             
             if(usableModels.length === 0) throw new Error("사용 가능한 모델이 없습니다.");
             log(`✅ ${usableModels.length}개의 모델 발견. 순차 접속 시도...`);
 
-            // [컨텐츠 구성] - PDF 파일이 있으면 포함
             const parts = [];
             parts.push({ text: userPrompt });
             if (uploadedFileUri) {
@@ -406,14 +406,9 @@
                 });
             }
 
-            // [생존 루프] - 하나씩 시도
             let success = false;
 
             for(let modelInfo of usableModels) {
-                // modelInfo.name은 "models/gemini-1.5-flash-001" 형태임
-                // API URL은 /v1beta/models/gemini... 형식이거나 /v1beta/{name}... 형식을 따름
-                // modelInfo.name 자체에 'models/'가 포함되어 있으므로 그대로 사용하면 됨
-                
                 const modelNameForLog = modelInfo.name.replace("models/", "");
                 log(`⏳ [${modelNameForLog}] 연결 시도...`);
 
@@ -421,7 +416,8 @@
                     const reqBody = {
                         contents: [{ parts: parts }],
                         system_instruction: { parts: [{ text: systemInstruction }] },
-                        generationConfig: { temperature: 0.4, maxOutputTokens: 2000 }
+                        // [핵심 수정] maxOutputTokens를 2000 -> 15000 으로 대폭 상향
+                        generationConfig: { temperature: 0.4, maxOutputTokens: 15000 }
                     };
 
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${modelInfo.name}:generateContent?key=${apiKey}`, {
@@ -439,9 +435,8 @@
                         document.getElementById('result-box').style.display = 'block';
                         document.getElementById('status-log').style.display = 'none'; 
                         success = true;
-                        break; // 성공했으니 루프 탈출
+                        break; 
                     } else if (data.error) {
-                         // 실패 로그 남기고 다음 모델로 continue
                         console.warn(`${modelNameForLog} Error:`, data.error);
                         log(`⚠️ 실패: ${data.error.message}. 다음 모델 시도...`);
                     }
