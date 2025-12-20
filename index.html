@@ -12,13 +12,10 @@
         body { font-family: 'Pretendard', sans-serif; background: var(--bg); padding: 20px; display: flex; justify-content: center; margin: 0; color: #2c3e50; }
         .container { width: 100%; max-width: 800px; background: var(--white); border-radius: 15px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); overflow: hidden; }
         
-        /* 상단 UI 개편 */
         .header { background: var(--primary); color: white; padding: 40px 30px; text-align: center; border-bottom: 5px solid var(--accent); position: relative; }
         .header h1 { margin: 0; font-size: 1.9rem; letter-spacing: 1px; font-weight: 800; }
         .header .sub-lawfirm { font-size: 0.9rem; opacity: 0.7; margin-bottom: 5px; display: block; }
-        .header p { margin: 10px 0 0; font-size: 1rem; opacity: 0.9; font-weight: 300; }
         .officer-info { margin-top: 15px; font-size: 0.95rem; color: #ecf0f1; background: rgba(255,255,255,0.1); display: inline-block; padding: 10px 20px; border-radius: 8px; }
-        .officer-info strong { color: #fff; }
         .contact-info { display: block; font-size: 0.85rem; margin-top: 5px; color: #bdc3c7; }
 
         .content { padding: 40px; }
@@ -54,7 +51,7 @@
     <div class="header">
         <small class="sub-lawfirm">법무법인 대림 (DAELIM)</small>
         <h1>🇰🇷 비자 추천 & 체류 행정 전문가 분석</h1>
-        <p>인공지능 기반 자격 변경 및 승인 가능성 정밀 진단</p>
+        <p>인구감소지역 및 숙련기능인력 정밀 진단 시스템</p>
         <div class="officer-info">
             담당 사무장 : <strong>이규희 (Lee Gyu-hee)</strong>
             <span class="contact-info">📞 문의: 02-1234-5678 | 📧 이메일: info@daelimlaw.com</span>
@@ -84,7 +81,7 @@
         <div class="row">
             <div class="col form-group">
                 <label>현재 체류 자격</label>
-                <input type="text" id="visaType" value="E-9" placeholder="예: E-9, D-2, H-2">
+                <input type="text" id="visaType" value="E-9" placeholder="예: E-9, D-2">
             </div>
             <div class="col form-group">
                 <label>생년월일 및 연령</label>
@@ -111,7 +108,7 @@
 
         <div class="form-group">
             <label>기타 특이사항 (학력, 자격증, 근무지역 등)</label>
-            <textarea id="details" rows="3" placeholder="근무지역, 학력 등을 기록하세요">국내 전문학사 학위 보유, 용접기능사 자격증 보유, 인구감소지역 거주 중.</textarea>
+            <textarea id="details" rows="3" placeholder="근무지역(읍/면/리), 학력, 기술자격증 등을 기록하세요">국내 전문학사 학위 보유, 용접기능사 자격증 보유, 인구감소지역 거주 및 근무 중.</textarea>
         </div>
 
         <button class="btn-primary" onclick="runAnalysis()">⚖️ 이규희 사무장 정밀 분석 실행</button>
@@ -120,7 +117,7 @@
 
         <div id="result-box">
             <div id="result-header">
-                <span>📄 비자 수임 가능성 진단 리포트</span>
+                <span>📄 비자 수임 가능성 진단 리포트 (E-7-4, F-2-R, F-2-7)</span>
                 <span style="font-size:0.8rem; font-weight:normal;">이규희 사무장 전용 시스템</span>
             </div>
             <div id="result-content"></div>
@@ -128,7 +125,7 @@
     </div>
     <div class="footer">
         서울특별시 영등포구 | 법무법인 대림 비자전담팀
-        <span class="ver-info">System Version v1.0.1 (Powered by AI Analysis)</span>
+        <span class="ver-info">System Version v1.0.2 (E-7-4/F-2-R/F-2-7 집중 분석)</span>
     </div>
 </div>
 
@@ -182,7 +179,7 @@
         if(!apiKey || !uploadedFileUri) return alert("인증 키 입력과 지침 파일 업로드가 필요합니다.");
         checkAndSaveKey();
 
-        document.getElementById('status-log').innerHTML = "--- 분석 엔진 v1.0.1 가동 (Advanced Mode) ---\n";
+        document.getElementById('status-log').innerHTML = "--- 분석 엔진 v1.0.2 가동 (Focus: E-7-4, F-2-R, F-2-7) ---\n";
         document.getElementById('result-box').style.display = 'none';
 
         try {
@@ -192,26 +189,28 @@
 
             const prompt = `
             당신은 [법무법인 대림]의 [이규희 사무장]입니다.
-            업로드된 PDF 매뉴얼을 기반으로 의뢰인의 비자 변경 가능성을 순위별로 분석하십시오.
+            업로드된 PDF 매뉴얼을 기반으로 의뢰인의 비자 변경 가능성을 다음 세 가지(E-7-4, F-2-R, F-2-7) 위주로 분석하십시오.
 
             [의뢰인 데이터]
             현재: ${document.getElementById('visaType').value}, 나이: ${document.getElementById('age').value}, 소득: ${document.getElementById('income').value}만원, 한국어: ${document.getElementById('koreanSkill').value}, 특이사항: ${document.getElementById('details').value}
 
-            [보고서 구성 지침]
+            [분석 및 보고서 구성 가이드]
             1. 인사말: "안녕하십니까, 법무법인 대림의 이규희 사무장입니다."
-            2. 순위별 추천 (이모티콘 필수): 
-               🥇 1순위 비자명 (성공확률 %), 🥈 2순위 비자명 (성공확률 %), 🥉 3순위 비자명 (성공확률 %) 형식으로 제시하십시오.
-            3. 각 비자별 상세 분석:
-               - 비자의 특징 (해당 비자가 의뢰인에게 왜 유리한가)
-               - 체류 기한 (최대 부여 가능한 체류 기한 명시)
-               - 점수/요건 충족 상세 내역 (2024 GNI 4,405만원 기준)
-            4. 결격 사유 주의사항: 세금, 범죄, 고용보험 등 실무적 리스크 경고.
-            5. 보완 전략: 다음 비자 신청 전까지 의뢰인이 준비해야 할 로드맵.
+            2. 순위별 추천 (🥇🥈🥉 이모티콘 사용):
+               E-7-4(숙련기능), F-2-R(지역특화형), F-2-7(점수제 거주) 중 성공 확률이 높은 순서대로 배치하십시오.
+            3. 비자별 '강력한 장점' 및 특징 부각:
+               - E-7-4: 장기 체류 안정성, 추후 F-2-7로의 전환 발판 등.
+               - F-2-R: 인구감소지역 혜택, 완화된 소득 기준, 가족 동반 취업 자유도 등 장점을 적극 서술.
+               - F-2-7: 자유로운 이직과 구직, 영주권(F-5) 신청 시 유리한 고지 등.
+            4. 체류 기한 및 요건 정밀 진단:
+               - 각 비자 신청 시 부여되는 체류 기한.
+               - 2024년 GNI 4,405만원 기준으로 점수 및 소득 요건(GNI 70% 등) 계산.
+            5. 결격 사유 및 보완 로드맵: 실무적 반려 위험 요소 경고 및 대처법.
             `;
 
             let success = false;
             for(let model of usableModels) {
-                log(`⏳ [${model.name.split('/')[1]}] 고도화된 분석 시퀀스 작동 중...`);
+                log(`⏳ [${model.name.split('/')[1]}] 집중 분석 시퀀스 작동 중...`);
                 try {
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model.name}:generateContent?key=${apiKey}`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
