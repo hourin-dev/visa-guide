@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>법무법인 대림 - 이규희 사무장 비자 분석 v1.0.0</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -11,12 +11,16 @@
         }
         body { font-family: 'Pretendard', sans-serif; background: var(--bg); padding: 20px; display: flex; justify-content: center; margin: 0; color: #2c3e50; }
         .container { width: 100%; max-width: 800px; background: var(--white); border-radius: 15px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: var(--primary); color: white; padding: 40px 30px; text-align: center; border-bottom: 5px solid var(--accent); position: relative; }
-        .ver-tag { position: absolute; top: 15px; right: 20px; font-size: 0.75rem; opacity: 0.7; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 4px; }
-        .header h1 { margin: 0; font-size: 1.8rem; letter-spacing: 1px; }
-        .header p { margin: 10px 0 0; font-size: 1rem; opacity: 0.9; }
-        .officer-info { margin-top: 15px; font-size: 0.9rem; color: #bdc3c7; }
         
+        /* 상단 UI 개편 */
+        .header { background: var(--primary); color: white; padding: 40px 30px; text-align: center; border-bottom: 5px solid var(--accent); position: relative; }
+        .header h1 { margin: 0; font-size: 1.9rem; letter-spacing: 1px; font-weight: 800; }
+        .header .sub-lawfirm { font-size: 0.9rem; opacity: 0.7; margin-bottom: 5px; display: block; }
+        .header p { margin: 10px 0 0; font-size: 1rem; opacity: 0.9; font-weight: 300; }
+        .officer-info { margin-top: 15px; font-size: 0.95rem; color: #ecf0f1; background: rgba(255,255,255,0.1); display: inline-block; padding: 10px 20px; border-radius: 8px; }
+        .officer-info strong { color: #fff; }
+        .contact-info { display: block; font-size: 0.85rem; margin-top: 5px; color: #bdc3c7; }
+
         .content { padding: 40px; }
         .section-title { font-size: 1.2rem; font-weight: 700; color: var(--primary); border-left: 5px solid var(--primary); padding-left: 12px; margin: 30px 0 15px; display: flex; justify-content: space-between; align-items: center; }
         .status-badge { font-size: 0.75rem; padding: 5px 12px; border-radius: 50px; color: white; font-weight: 500; }
@@ -37,28 +41,33 @@
         
         #status-log { margin-top: 20px; padding: 15px; background: #1e1e1e; color: #00ff00; font-family: monospace; font-size: 0.85rem; border-radius: 8px; display: none; max-height: 150px; overflow-y: auto; }
         #result-box { margin-top: 35px; display: none; border: 1px solid #ddd; border-radius: 12px; overflow: hidden; background: #fff; border-top: 4px solid var(--primary); }
-        #result-header { background: #f8f9fa; padding: 20px; border-bottom: 1px solid #eee; font-weight: 800; color: var(--primary); display: flex; justify-content: space-between; }
+        #result-header { background: #f8f9fa; padding: 20px; border-bottom: 1px solid #eee; font-weight: 800; color: var(--primary); display: flex; justify-content: space-between; align-items: center; }
         #result-content { padding: 35px; line-height: 1.9; white-space: pre-wrap; font-size: 1.05rem; color: #34495e; }
+        
         .footer { text-align: center; padding: 30px; font-size: 0.85rem; color: #95a5a6; border-top: 1px solid #eee; margin-top: 40px; }
+        .ver-info { font-size: 0.75rem; color: #bdc3c7; display: block; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <span class="ver-tag">Release v1.0.0</span>
-        <h1>⚖️ 법무법인 대림 (DAELIM)</h1>
-        <p>외국인 비자 사건 통합 수임 분석 시스템</p>
-        <div class="officer-info">담당 사무장 : <strong>이규희 (Lee Gyu-hee)</strong></div>
+        <small class="sub-lawfirm">법무법인 대림 (DAELIM)</small>
+        <h1>🇰🇷 비자 추천 & 체류 행정 전문가 분석</h1>
+        <p>인공지능 기반 자격 변경 및 승인 가능성 정밀 진단</p>
+        <div class="officer-info">
+            담당 사무장 : <strong>이규희 (Lee Gyu-hee)</strong>
+            <span class="contact-info">📞 문의: 02-1234-5678 | 📧 이메일: info@daelimlaw.com</span>
+        </div>
     </div>
 
     <div class="content">
         <div class="form-group">
             <label>🔐 보안 인증 (Google AI API Key)</label>
-            <input type="password" id="apiKey" placeholder="AIzaSy...보안 키를 입력하세요" onchange="checkAndSaveKey()">
+            <input type="password" id="apiKey" placeholder="보안 키를 입력하세요" onchange="checkAndSaveKey()">
             <div style="font-size: 0.8rem; color: #7f8c8d; margin-top: 8px; display: flex; align-items: center; gap: 5px;">
                 <input type="checkbox" id="saveKey" onchange="checkAndSaveKey()"> 
-                <label for="saveKey" style="display:inline; font-weight:normal; margin:0; cursor:pointer;">이 기기에 인증 정보 안전하게 저장 (v1.0.0)</label>
+                <label for="saveKey" style="display:inline; font-weight:normal; margin:0; cursor:pointer;">인증 정보 안전하게 저장</label>
             </div>
         </div>
 
@@ -102,46 +111,44 @@
 
         <div class="form-group">
             <label>기타 특이사항 (학력, 자격증, 근무지역 등)</label>
-            <textarea id="details" rows="3" placeholder="인구감소지역 거주 여부, 학력 등을 기록하세요">국내 전문학사 학위 보유, 용접기능사 자격증 보유, 인구감소지역 거주 중.</textarea>
+            <textarea id="details" rows="3" placeholder="근무지역, 학력 등을 기록하세요">국내 전문학사 학위 보유, 용접기능사 자격증 보유, 인구감소지역 거주 중.</textarea>
         </div>
 
-        <button class="btn-primary" onclick="runAnalysis()">⚖️ 이규희 사무장 정밀 분석 (v1.0.0)</button>
+        <button class="btn-primary" onclick="runAnalysis()">⚖️ 이규희 사무장 정밀 분석 실행</button>
 
         <div id="status-log">로그 대기 중...</div>
 
         <div id="result-box">
             <div id="result-header">
-                <span>📄 법무법인 대림 - 비자 수임 분석 리포트</span>
-                <small style="font-weight:normal; opacity:0.8;">System v1.0.0</small>
+                <span>📄 비자 수임 가능성 진단 리포트</span>
+                <span style="font-size:0.8rem; font-weight:normal;">이규희 사무장 전용 시스템</span>
             </div>
             <div id="result-content"></div>
         </div>
     </div>
-    <div class="footer">서울특별시 영등포구 | 법무법인 대림 비자전담팀 v1.0.0</div>
+    <div class="footer">
+        서울특별시 영등포구 | 법무법인 대림 비자전담팀
+        <span class="ver-info">System Version v1.0.1 (Powered by AI Analysis)</span>
+    </div>
 </div>
 
 <script>
     let uploadedFileUri = null;
 
-    // 페이지 로딩 시 저장된 키 자동 로드
     window.onload = function() {
         const savedKey = localStorage.getItem("daelim_api_key");
         if(savedKey) {
             document.getElementById('apiKey').value = savedKey;
             document.getElementById('saveKey').checked = true;
-            log("✅ 저장된 보안 인증 정보 v1.0.0를 성공적으로 불러왔습니다.");
+            log("✅ 저장된 보안 인증 정보를 불러왔습니다.");
         }
     }
 
-    // 키 저장 여부 체크 및 저장 실행
     function checkAndSaveKey() {
         const apiKey = document.getElementById('apiKey').value.trim();
         const saveChecked = document.getElementById('saveKey').checked;
-        if(saveChecked && apiKey) {
-            localStorage.setItem("daelim_api_key", apiKey);
-        } else {
-            localStorage.removeItem("daelim_api_key");
-        }
+        if(saveChecked && apiKey) localStorage.setItem("daelim_api_key", apiKey);
+        else localStorage.removeItem("daelim_api_key");
     }
 
     function log(msg) {
@@ -154,7 +161,7 @@
         const fileInput = document.getElementById('pdfFile');
         const label = document.getElementById('file-label');
         if(!apiKey || !fileInput.files[0]) return alert("키와 파일을 확인하세요.");
-        checkAndSaveKey(); // 업로드 시점에도 한 번 더 저장 체크
+        checkAndSaveKey();
         label.innerText = "업로드 중...";
         try {
             const res = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`, {
@@ -165,17 +172,17 @@
             const uploadRes = await fetch(uploadUrl, { method: 'POST', headers: { 'X-Goog-Upload-Offset': '0', 'X-Goog-Upload-Command': 'upload, finalize' }, body: fileInput.files[0] });
             const data = await uploadRes.json();
             uploadedFileUri = data.file.uri;
-            label.innerText = "데이터 로드 완료 (v1.0.0)"; label.className = "status-badge status-active";
+            label.innerText = "데이터 로드 완료"; label.className = "status-badge status-active";
             log("✅ PDF 지침 데이터 동기화 성공.");
         } catch(e) { label.className = "status-badge status-error"; log("❌ 오류: " + e.message); }
     }
 
     async function runAnalysis() {
         const apiKey = document.getElementById('apiKey').value.trim();
-        if(!apiKey || !uploadedFileUri) return alert("인증 키 입력과 지침 파일 업로드가 선행되어야 합니다.");
+        if(!apiKey || !uploadedFileUri) return alert("인증 키 입력과 지침 파일 업로드가 필요합니다.");
         checkAndSaveKey();
 
-        document.getElementById('status-log').innerHTML = "--- 분석 엔진 v1.0.0 가동 (Ranking Mode) ---\n";
+        document.getElementById('status-log').innerHTML = "--- 분석 엔진 v1.0.1 가동 (Advanced Mode) ---\n";
         document.getElementById('result-box').style.display = 'none';
 
         try {
@@ -190,17 +197,21 @@
             [의뢰인 데이터]
             현재: ${document.getElementById('visaType').value}, 나이: ${document.getElementById('age').value}, 소득: ${document.getElementById('income').value}만원, 한국어: ${document.getElementById('koreanSkill').value}, 특이사항: ${document.getElementById('details').value}
 
-            [필수 포함 사항]
+            [보고서 구성 지침]
             1. 인사말: "안녕하십니까, 법무법인 대림의 이규희 사무장입니다."
-            2. 비자 랭킹: F-2-7, F-2-R, E-7-4 중 성공 확률이 높은 순서대로 [1순위], [2순위], [3순위]를 부여하고 각각의 성공 확률(%)을 분석하십시오.
-            3. 상세 점수 산출: 각 비자별로 요건 충족 여부를 정밀 계산하십시오 (2024 GNI 4,405만원 기준).
-            4. 반려 사유 주의: 실무적 결격 사유를 경고하십시오.
-            5. 보완 전략: 수임 가능성을 높이기 위한 로드맵 제시.
+            2. 순위별 추천 (이모티콘 필수): 
+               🥇 1순위 비자명 (성공확률 %), 🥈 2순위 비자명 (성공확률 %), 🥉 3순위 비자명 (성공확률 %) 형식으로 제시하십시오.
+            3. 각 비자별 상세 분석:
+               - 비자의 특징 (해당 비자가 의뢰인에게 왜 유리한가)
+               - 체류 기한 (최대 부여 가능한 체류 기한 명시)
+               - 점수/요건 충족 상세 내역 (2024 GNI 4,405만원 기준)
+            4. 결격 사유 주의사항: 세금, 범죄, 고용보험 등 실무적 리스크 경고.
+            5. 보완 전략: 다음 비자 신청 전까지 의뢰인이 준비해야 할 로드맵.
             `;
 
             let success = false;
             for(let model of usableModels) {
-                log(`⏳ [${model.name.split('/')[1]}] 분석 시퀀스 작동 중...`);
+                log(`⏳ [${model.name.split('/')[1]}] 고도화된 분석 시퀀스 작동 중...`);
                 try {
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model.name}:generateContent?key=${apiKey}`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
