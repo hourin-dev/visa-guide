@@ -3,257 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>법무법인 대림 - 비자 사건 수임 분석 시스템 v3.2</title>
+    <title>법무법인 대림 - 비자 사건 분석 v3.4</title>
     <style>
         :root { 
-            --primary: #1a252f; /* 네이비 */
-            --secondary: #34495e; 
-            --accent: #c0392b; /* 포인트 레드 */
-            --success: #27ae60; /* 그린 */
-            --bg: #ecf0f1;
-            --white: #ffffff;
-            --border: #bdc3c7;
+            --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
+            --success: #27ae60; --warning: #f39c12; --bg: #ecf0f1; --white: #ffffff; --border: #bdc3c7;
         }
-
-        body { 
-            font-family: 'Pretendard', 'Malgun Gothic', sans-serif; 
-            background: var(--bg); 
-            padding: 20px; 
-            display: flex; 
-            justify-content: center; 
-            color: #333; 
-            margin: 0;
-        }
-        
-        .container { 
-            width: 100%; max-width: 700px; 
-            background: var(--white); border-radius: 8px; 
-            box-shadow: 0 15px 40px rgba(0,0,0,0.1); 
-            overflow: hidden; 
-            display: flex; flex-direction: column;
-        }
-
-        .header { 
-            background: var(--primary); color: white; 
-            padding: 30px 20px; text-align: center; 
-            border-bottom: 4px solid var(--secondary);
-        }
-        .header h2 { margin: 0; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.5px; }
-        .header p { margin: 8px 0 0; font-size: 0.95rem; opacity: 0.85; font-weight: 300; }
-        .badge {
-            display: inline-block; background: var(--success); color: white;
-            font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; vertical-align: middle; margin-left: 5px;
-        }
-
+        body { font-family: 'Pretendard', sans-serif; background: var(--bg); padding: 20px; display: flex; justify-content: center; margin: 0; }
+        .container { width: 100%; max-width: 800px; background: var(--white); border-radius: 12px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; }
+        .header { background: var(--primary); color: white; padding: 30px; text-align: center; }
         .content { padding: 30px; }
+        
+        .section-title { font-size: 1.1rem; font-weight: bold; color: var(--primary); border-left: 4px solid var(--primary); padding-left: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* 상태 라벨 스타일 */
+        .status-badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; color: white; font-weight: normal; }
+        .status-wait { background: #95a5a6; } /* 대기 중 */
+        .status-active { background: var(--success); } /* 완료 */
+        .status-error { background: var(--accent); animation: blink 1s infinite; } /* 재업로드 필요 */
 
-        .api-section {
-            background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #eee; margin-bottom: 25px;
-        }
-        .api-section label { display: block; font-weight: bold; margin-bottom: 8px; color: var(--secondary); font-size: 0.9rem; }
-        .password-wrapper { position: relative; display: flex; align-items: center; }
-        .password-wrapper input { 
-            flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 4px; font-family: monospace;
-        }
-        .save-key-check { margin-top: 8px; font-size: 0.85rem; color: #666; display: flex; align-items: center; gap: 5px; }
+        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
 
-        .upload-zone {
-            border: 2px dashed var(--border);
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 25px;
-            background: #fafafa;
-            transition: 0.3s;
-        }
-        .upload-zone.active { border-color: var(--primary); background: #eef2f5; }
-        .upload-btn-wrap { margin-top: 10px; }
-        #file-status { 
-            margin-top: 10px; font-size: 0.9rem; font-weight: bold; min-height: 20px; 
-        }
-        .status-ready { color: var(--success); }
-        .status-error { color: var(--accent); }
-
-        .section-title {
-            font-size: 1.1rem; font-weight: bold; color: var(--primary);
-            border-left: 4px solid var(--primary); padding-left: 10px; margin-bottom: 15px;
-        }
+        .upload-zone { background: #f8f9fa; padding: 20px; border: 2px dashed var(--border); border-radius: 8px; text-align: center; transition: 0.3s; }
+        .upload-zone.need-file { border-color: var(--accent); background: #fff5f5; }
 
         .row { display: flex; gap: 15px; margin-bottom: 15px; }
         .col { flex: 1; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 4px; box-sizing: border-box; }
         
-        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: var(--secondary); }
-        .form-group input, .form-group select, .form-group textarea { 
-            width: 100%; padding: 12px; 
-            border: 1px solid var(--border); border-radius: 4px; 
-            font-size: 0.95rem; box-sizing: border-box; transition: 0.2s;
-        }
-        .form-group input:focus, .form-group select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.1); }
-
-        .btn-primary { 
-            width: 100%; padding: 16px; 
-            background: var(--primary); color: white; 
-            border: none; border-radius: 6px; 
-            font-size: 1.1rem; font-weight: bold; cursor: pointer; 
-            transition: background 0.3s; margin-top: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .btn-primary:hover { background: #2c3e50; transform: translateY(-1px); }
-        .btn-primary:active { transform: translateY(0); }
-        .btn-upload {
-            background: var(--secondary); color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem;
-        }
-        .btn-upload:disabled { background: #95a5a6; cursor: not-allowed; }
-
-        #status-log { 
-            margin-top: 20px; padding: 15px; 
-            background: #222; color: #0f0; 
-            font-family: 'Consolas', monospace; font-size: 0.8rem; 
-            border-radius: 6px; display: none; 
-            max-height: 120px; overflow-y: auto;
-            white-space: pre-wrap;
-        }
-
-        #result-box { 
-            margin-top: 30px; display: none; 
-            border: 1px solid #ddd; border-radius: 8px; 
-            /* overflow: hidden 제거 또는 auto로 변경하여 긴 내용 지원 */
-            overflow: visible; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
-        #result-header { 
-            background: #f1f2f6; padding: 15px 20px; 
-            border-bottom: 1px solid #ddd; 
-            font-weight: bold; color: var(--primary); 
-            display: flex; justify-content: space-between; align-items: center;
-            border-radius: 8px 8px 0 0;
-        }
-        #result-content { 
-            padding: 30px; line-height: 1.8; font-size: 1rem; color: #2c3e50; 
-            background: white;
-            border-radius: 0 0 8px 8px;
-        }
+        .btn-primary { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
         
-        #result-content h1, #result-content h2, #result-content h3 { color: var(--primary); margin-top: 1.5em; margin-bottom: 0.5em; }
-        #result-content strong { color: var(--accent); }
-        #result-content ul { padding-left: 20px; }
-        #result-content li { margin-bottom: 5px; }
-        #result-content blockquote { border-left: 4px solid var(--secondary); margin: 0; padding-left: 15px; color: #555; background: #f9f9f9; padding: 10px; }
-
-        .footer {
-            margin-top: 40px; text-align: center; font-size: 0.8rem; color: #7f8c8d; border-top: 1px solid #eee; padding-top: 20px;
-        }
-        .footer strong { color: var(--primary); }
-
+        #result-box { margin-top: 30px; display: none; border: 2px solid var(--primary); border-radius: 8px; background: #fff; }
+        #result-header { background: var(--primary); color: white; padding: 15px 20px; font-weight: bold; }
+        #result-content { padding: 30px; line-height: 1.8; overflow: visible; }
+        
+        #status-log { margin-top: 20px; padding: 15px; background: #222; color: #0f0; font-family: monospace; font-size: 0.8rem; border-radius: 6px; display: none; max-height: 150px; overflow-y: auto; white-space: pre-wrap; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h2>⚖️ 법무법인 대림 외국인 사건 분석기 <span class="badge">v3.2</span></h2>
-        <p>Gemini AI 순차 탐색 & PDF 정밀 분석 (Full Report)</p>
+        <h2>⚖️ 법무법인 대림 비자 분석기 v3.4</h2>
+        <p>대한민국 비자 행정 통합 분석 솔루션 (이규희 사무장 모드)</p>
     </div>
 
     <div class="content">
-        <div class="api-section">
+        <div class="form-group" style="margin-bottom:25px;">
             <label>🔐 Google AI API Key</label>
-            <div class="password-wrapper">
-                <input type="password" id="apiKey" placeholder="AIzaSy... 키를 입력하세요">
-            </div>
-            <div class="save-key-check">
-                <input type="checkbox" id="saveKey"> <label for="saveKey" style="display:inline; margin:0; font-weight:normal; cursor:pointer;">브라우저에 키 저장 (로컬 스토리지)</label>
-            </div>
+            <input type="password" id="apiKey" placeholder="API 키를 입력하세요">
         </div>
 
-        <div class="section-title">📂 비자 매뉴얼/지침 업로드 (PDF)</div>
-        <div class="upload-zone" id="dropZone">
-            <input type="file" id="pdfFile" accept="application/pdf" style="display: none;">
-            <p style="margin:0; color:#666;">법무부 최신 매뉴얼(PDF)을 선택하세요.</p>
-            <div class="upload-btn-wrap">
-                <button class="btn-upload" onclick="document.getElementById('pdfFile').click()">파일 선택</button>
-                <button class="btn-upload" style="background-color: var(--primary);" onclick="uploadFile()">서버 전송(Upload)</button>
-            </div>
-            <div id="file-status">파일이 선택되지 않았습니다.</div>
+        <div class="section-title">
+            <span>📂 법무부 지침 파일 (PDF)</span>
+            <span id="file-label" class="status-badge status-wait">파일 없음</span>
+        </div>
+        
+        <div class="upload-zone" id="upload-zone">
+            <input type="file" id="pdfFile" accept="application/pdf" onchange="updateFileLabel()">
+            <button onclick="uploadFile()" style="padding: 10px 20px; background: var(--secondary); color:white; border:none; border-radius:4px; cursor:pointer; margin-top:10px;">파일 서버 전송</button>
+            <p id="upload-msg" style="font-size: 0.85rem; color: #666; margin-top: 10px;">* 분석 전 반드시 전송 버튼을 눌러주세요.</p>
         </div>
 
-        <div class="section-title">📝 의뢰인 정보 입력</div>
+        <div class="section-title" style="margin-top:25px;">📝 의뢰인 진단 정보</div>
         <div class="row">
             <div class="col form-group">
-                <label>현재 체류 자격</label>
-                <input type="text" id="visaType" value="E-9 (비전문취업)" placeholder="예: E-9, D-2">
+                <label>현재 비자</label>
+                <input type="text" id="visaType" value="E-9">
             </div>
             <div class="col form-group">
-                <label>생년월일 (나이)</label>
-                <input type="text" id="age" value="1995년생 (만 29세)" placeholder="예: 1990년생">
+                <label>전년도 소득 (만원)</label>
+                <input type="number" id="income" value="4000">
             </div>
         </div>
-
         <div class="row">
             <div class="col form-group">
-                <label>전년도 소득 (단위: 만원)</label>
-                <input type="number" id="income" value="3800" placeholder="3800">
-            </div>
-            <div class="col form-group">
-                <label>한국어 능력 (TOPIK/KIIP)</label>
+                <label>한국어 능력</label>
                 <select id="koreanSkill">
-                    <option value="없음">없음</option>
-                    <option value="TOPIK 1급">TOPIK 1급</option>
-                    <option value="TOPIK 2급">TOPIK 2급</option>
-                    <option value="TOPIK 3급" selected>TOPIK 3급 / KIIP 3단계</option>
-                    <option value="TOPIK 4급">TOPIK 4급 / KIIP 4단계</option>
-                    <option value="TOPIK 5급 이상">TOPIK 5급 이상 / KIIP 5단계</option>
-                    <option value="KIIP 이수완료">사회통합프로그램(KIIP) 이수 완료</option>
+                    <option value="KIIP 5단계">KIIP 5단계 / TOPIK 5급</option>
+                    <option value="KIIP 4단계">KIIP 4단계 / TOPIK 4급</option>
+                    <option value="KIIP 3단계" selected>KIIP 3단계 / TOPIK 3급</option>
                 </select>
             </div>
+            <div class="col form-group">
+                <label>특이사항</label>
+                <input type="text" id="details" value="국내 전문학사, 용접기능사">
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>추가 특이사항 (학력, 자격증, 범죄경력 등)</label>
-            <input type="text" id="details" value="국내 전문학사 졸업, 용접기능사 보유, 벌금형 없음" placeholder="상세 정보를 입력하세요">
-        </div>
+        <button class="btn-primary" onclick="runAnalysis()">⚖️ 법률 검토 및 무제한 리포트 생성</button>
 
-        <button class="btn-primary" onclick="runAnalysis()">⚖️ 법률 검토 및 분석 실행</button>
-
-        <div id="status-log">시스템 대기 중...</div>
+        <div id="status-log"></div>
 
         <div id="result-box">
-            <div id="result-header">
-                <span>📄 수임 분석 보고서</span>
-                <span style="font-size:0.8rem; font-weight:normal;">Generated by Gemini AI</span>
-            </div>
+            <div id="result-header">📄 정밀 분석 보고서</div>
             <div id="result-content"></div>
-        </div>
-
-        <div class="footer">
-            법무법인 대림 외국인 사건 분석 시스템 <strong>ver 3.2</strong><br>
-            관리자: 사무장 이규희 | 문의: 02-0000-0000
         </div>
     </div>
 </div>
 
 <script>
-    // --- Global State ---
-    let uploadedFileUri = null; 
+    let uploadedFileUri = null;
 
-    // --- 1. Initialization ---
-    window.onload = function() {
-        const savedKey = localStorage.getItem("myGeminiKey");
-        if(savedKey) {
-            document.getElementById('apiKey').value = savedKey;
-            document.getElementById('saveKey').checked = true;
-        }
-
-        const fileInput = document.getElementById('pdfFile');
-        fileInput.addEventListener('change', function() {
-            if(fileInput.files.length > 0) {
-                document.getElementById('file-status').innerHTML = `선택됨: ${fileInput.files[0].name} (업로드 필요)`;
-                document.getElementById('file-status').className = '';
-            }
-        });
-    }
-
-    // --- 2. Helper Functions ---
     function log(msg) {
         const box = document.getElementById('status-log');
         box.style.display = 'block';
@@ -261,202 +113,95 @@
         box.scrollTop = box.scrollHeight;
     }
 
-    function markdownToHtml(text) {
-        let html = text
-            .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-            .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-            .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-            .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
-            .replace(/^\s*-\s(.*$)/gim, '<ul><li>$1</li></ul>')
-            .replace(/^\s*\d+\.\s(.*$)/gim, '<br><b>$1</b>')
-            .replace(/<\/ul>\s*<ul>/gim, '')
-            .replace(/\n/g, '<br>');
-        return html;
-    }
-
-    // --- 3. File Upload Logic ---
-    async function uploadFile() {
-        const apiKey = document.getElementById('apiKey').value.trim();
+    // 파일 선택 시 라벨 업데이트
+    function updateFileLabel() {
         const fileInput = document.getElementById('pdfFile');
-
-        if(!apiKey) return alert("먼저 API 키를 입력해주세요.");
-        if(fileInput.files.length === 0) return alert("업로드할 PDF 파일을 선택해주세요.");
-
-        const file = fileInput.files[0];
-        const fileSize = file.size;
-        const displayName = file.name;
-
-        log("📤 파일 업로드 프로세스 시작...");
-
-        try {
-            const initUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`;
-            const initRes = await fetch(initUrl, {
-                method: 'POST',
-                headers: {
-                    'X-Goog-Upload-Protocol': 'resumable',
-                    'X-Goog-Upload-Command': 'start',
-                    'X-Goog-Upload-Header-Content-Length': fileSize,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ file: { display_name: displayName } })
-            });
-
-            if(!initRes.ok) throw new Error(`초기화 실패: ${initRes.statusText}`);
-            
-            const uploadUrl = initRes.headers.get('x-goog-upload-url');
-            log("🔗 업로드 경로 확보 완료. 데이터 전송 중...");
-
-            const uploadRes = await fetch(uploadUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Length': fileSize,
-                    'X-Goog-Upload-Offset': '0',
-                    'X-Goog-Upload-Command': 'upload, finalize'
-                },
-                body: file 
-            });
-
-            if(!uploadRes.ok) throw new Error(`전송 실패: ${uploadRes.statusText}`);
-
-            const fileData = await uploadRes.json();
-            uploadedFileUri = fileData.file.uri;
-            
-            log(`✅ 업로드 성공! URI: ${uploadedFileUri}`);
-            
-            const statusBox = document.getElementById('file-status');
-            statusBox.innerHTML = `✅ 업로드 완료 (URI: ${uploadedFileUri.substring(0, 15)}...)`;
-            statusBox.className = 'status-ready';
-
-        } catch (e) {
-            console.error(e);
-            log(`❌ 업로드 오류: ${e.message}`);
-            alert(`파일 업로드 중 오류가 발생했습니다: ${e.message}`);
+        const label = document.getElementById('file-label');
+        if(fileInput.files.length > 0) {
+            label.innerText = "전송 필요";
+            label.className = "status-badge status-wait";
+            document.getElementById('upload-zone').classList.remove('need-file');
         }
     }
 
-    // --- 4. Main Analysis Logic (Updated Max Tokens) ---
-    async function runAnalysis() {
-        const apiKey = document.getElementById('apiKey').value.trim();
-        const visa = document.getElementById('visaType').value;
-        const age = document.getElementById('age').value;
-        const income = document.getElementById('income').value;
-        const korean = document.getElementById('koreanSkill').value;
-        const details = document.getElementById('details').value;
-        const saveKeyCheck = document.getElementById('saveKey').checked;
-
-        if(saveKeyCheck && apiKey) localStorage.setItem("myGeminiKey", apiKey);
-        else localStorage.removeItem("myGeminiKey");
-
-        if(!apiKey) return alert("API 키를 입력해주세요.");
-
-        document.getElementById('status-log').innerHTML = "";
-        document.getElementById('result-box').style.display = 'none';
-        log("🚀 분석 프로세스 시작...");
-
-        const systemInstruction = `
-            당신은 법무법인 대림의 사무장 '이규희'입니다.
-            제공된 [매뉴얼/지침 파일]이 있다면 이를 최우선 법적 근거로 삼아야 합니다.
-            
-            [분석 목표]
-            의뢰인의 정보를 바탕으로 F-2-7(점수제 거주), E-7-4(숙련기능인력) 등 최적의 비자 변경 시나리오를 분석하십시오.
-
-            [필수 준수 사항]
-            1. 점수 계산 시 최신 GNI(국민총소득)를 기준으로 하되, 기준 년도가 명확하지 않으면 2024년 기준(약 4,400만원 대)을 참고하여 보수적으로 계산.
-            2. '반려 사유(범죄경력, 세금체납 등)' 경고 필수.
-            3. 답변 톤앤매너: 전문적이고 신뢰감 있게 ("~합니다", "~것으로 사료됩니다").
-        `;
-
-        const userPrompt = `
-            [의뢰인 정보]
-            - 현재 비자: ${visa}
-            - 생년월일/나이: ${age}
-            - 연간 소득: ${income}만원
-            - 한국어 능력: ${korean}
-            - 특이사항: ${details}
-
-            위 정보를 바탕으로 비자 변경 가능성을 진단하고, 
-            1. F-2-7 점수표에 따른 가상 득점 상세 내역
-            2. E-7-4 전환 가능성
-            3. 종합 수임 의견 및 보완 필요 사항
-            을 마크다운 형식으로 작성해 주세요.
-        `;
+    // 파일 업로드 (상태 라벨 반영)
+    async function uploadFile() {
+        const apiKey = document.getElementById('apiKey').value;
+        const fileInput = document.getElementById('pdfFile');
+        const label = document.getElementById('file-label');
+        
+        if(!fileInput.files[0]) return alert("파일을 먼저 선택해주세요.");
+        
+        label.innerText = "업로드 중...";
+        log("파일 업로드 프로세스 시작...");
 
         try {
-            log("🔍 사용 가능한 모델 리스트를 조회합니다...");
-            const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-            const listData = await listRes.json();
+            const initRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'X-Goog-Upload-Header-Content-Length': fileInput.files[0].size, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ file: { display_name: fileInput.files[0].name } })
+            });
+            const uploadUrl = initRes.headers.get('x-goog-upload-url');
+            const uploadRes = await fetch(uploadUrl, { method: 'POST', headers: { 'X-Goog-Upload-Command': 'upload, finalize' }, body: fileInput.files[0] });
+            const data = await uploadRes.json();
             
-            if(listData.error) throw new Error(listData.error.message);
+            uploadedFileUri = data.file.uri;
+            label.innerText = "준비 완료";
+            label.className = "status-badge status-active";
+            log("서버 자료 확인됨. 분석 가능 상태입니다.");
+        } catch(e) { 
+            label.innerText = "전송 실패";
+            label.className = "status-badge status-error";
+            log("오류: " + e.message); 
+        }
+    }
 
-            const usableModels = listData.models.filter(m => m.supportedGenerationMethods.includes("generateContent"))
-                                                .sort((a, b) => b.name.includes("gemini") - a.name.includes("gemini"));
-            
-            if(usableModels.length === 0) throw new Error("사용 가능한 모델이 없습니다.");
-            log(`✅ ${usableModels.length}개의 모델 발견. 순차 접속 시도...`);
+    async function runAnalysis() {
+        const apiKey = document.getElementById('apiKey').value;
+        const label = document.getElementById('file-label');
+        const zone = document.getElementById('upload-zone');
 
-            const parts = [];
-            parts.push({ text: userPrompt });
-            if (uploadedFileUri) {
-                log("📎 업로드된 파일을 분석에 포함합니다.");
-                parts.push({ 
-                    file_data: { 
-                        mime_type: "application/pdf", 
-                        file_uri: uploadedFileUri 
-                    } 
-                });
-            }
+        if(!apiKey) return alert("API Key를 입력하세요.");
+        
+        // 자료 유무 검증
+        if(!uploadedFileUri) {
+            label.innerText = "자료 재업로드 필요";
+            label.className = "status-badge status-error";
+            zone.classList.add('need-file');
+            alert("서버에 분석할 자료가 없습니다. PDF 파일을 선택하고 '전송' 버튼을 눌러주세요.");
+            return;
+        }
 
-            let success = false;
+        log("AI 분석 요청 중... (잠시만 기다려주세요)");
+        
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ 
+                        parts: [
+                            { text: `[분석 요청] 다음 정보를 바탕으로 비자 변경 가능성을 출입국관리법에 의거하여 매우 상세히 분석하라. 중간에 끊지 말고 끝까지 작성하라. \n 정보: ${document.getElementById('visaType').value}, ${document.getElementById('income').value}만원, ${document.getElementById('koreanSkill').value}, ${document.getElementById('details').value}` },
+                            { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
+                        ] 
+                    }],
+                    system_instruction: { parts: [{ text: "법무법인 대림 이규희 사무장. 전문적이고 상세하게 답변." }] },
+                    generationConfig: { temperature: 0.2, maxOutputTokens: 8192 }
+                })
+            });
 
-            for(let modelInfo of usableModels) {
-                const modelNameForLog = modelInfo.name.replace("models/", "");
-                log(`⏳ [${modelNameForLog}] 연결 시도...`);
+            const data = await res.json();
+            if(data.error) throw new Error(data.error.message);
 
-                try {
-                    const reqBody = {
-                        contents: [{ parts: parts }],
-                        system_instruction: { parts: [{ text: systemInstruction }] },
-                        // [핵심 수정] maxOutputTokens를 2000 -> 15000 으로 대폭 상향
-                        generationConfig: { temperature: 0.4, maxOutputTokens: 15000 }
-                    };
-
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${modelInfo.name}:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(reqBody)
-                    });
-
-                    const data = await res.json();
-
-                    if(data.candidates && data.candidates[0].content) {
-                        const resultText = data.candidates[0].content.parts[0].text;
-                        log("✅ 분석 성공!");
-                        document.getElementById('result-content').innerHTML = markdownToHtml(resultText);
-                        document.getElementById('result-box').style.display = 'block';
-                        document.getElementById('status-log').style.display = 'none'; 
-                        success = true;
-                        break; 
-                    } else if (data.error) {
-                        console.warn(`${modelNameForLog} Error:`, data.error);
-                        log(`⚠️ 실패: ${data.error.message}. 다음 모델 시도...`);
-                    }
-                } catch (innerE) {
-                    console.error(innerE);
-                    log(`⚠️ 네트워크 오류. 다음 모델 시도...`);
-                }
-            }
-
-            if(!success) {
-                throw new Error("모든 모델 접속에 실패했습니다. API 키 한도나 권한을 확인하세요.");
-            }
-
-        } catch (e) {
-            console.error(e);
-            log(`❌ 최종 오류: ${e.message}`);
-            alert(`분석 중 오류 발생: ${e.message}`);
+            document.getElementById('result-content').innerHTML = data.candidates[0].content.parts[0].text.replace(/\n/g, "<br>");
+            document.getElementById('result-box').style.display = 'block';
+            log("분석이 성공적으로 완료되었습니다.");
+        } catch(e) {
+            label.innerText = "세션 만료/오류";
+            label.className = "status-badge status-error";
+            log("분석 실패: " + e.message + " (파일을 다시 업로드해 보세요)");
         }
     }
 </script>
-
 </body>
 </html>
