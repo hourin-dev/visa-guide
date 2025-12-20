@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>¹ı¹«¹ıÀÎ ´ë¸² - ºñÀÚ »ç°Ç ¼öÀÓ ºĞ¼® ½Ã½ºÅÛ v2.1</title>
+    <title>ë²•ë¬´ë²•ì¸ ëŒ€ë¦¼ - ë¹„ì ì‚¬ê±´ ìˆ˜ì„ ë¶„ì„ ì‹œìŠ¤í…œ v2.1</title>
     <style>
         :root { 
-            --primary: #1a252f; /* ¹ı¹«¹ıÀÎ ³×ÀÌºñ */
+            --primary: #1a252f; /* ë²•ë¬´ë²•ì¸ ë„¤ì´ë¹„ */
             --secondary: #34495e; 
-            --accent: #c0392b; /* ¹İ·Á/°æ°í »ö»ó */
-            --success: #27ae60; /* ½ÂÀÎ/°¡´É »ö»ó */
+            --accent: #c0392b; /* ë°˜ë ¤/ê²½ê³  ìƒ‰ìƒ */
+            --success: #27ae60; /* ìŠ¹ì¸/ê°€ëŠ¥ ìƒ‰ìƒ */
             --bg: #ecf0f1;
             --white: #ffffff;
             --border: #bdc3c7;
@@ -154,90 +154,90 @@
 
 <div class="container">
     <div class="header">
-        <h2>?? ¹ı¹«¹ıÀÎ ´ë¸² ¿Ü±¹ÀÎ »ç°Ç ºĞ¼®±â <span class="badge">BETA</span></h2>
-        <p>Gemini 1.5 Flash ±â¹İ ÁöÄ§(PDF) Á¤¹Ğ ºĞ¼® ½Ã½ºÅÛ</p>
+        <h2>?? ë²•ë¬´ë²•ì¸ ëŒ€ë¦¼ ì™¸êµ­ì¸ ì‚¬ê±´ ë¶„ì„ê¸° <span class="badge">BETA</span></h2>
+        <p>Gemini 1.5 Flash ê¸°ë°˜ ì§€ì¹¨(PDF) ì •ë°€ ë¶„ì„ ì‹œìŠ¤í…œ</p>
     </div>
 
     <div class="content">
         <div class="api-section">
             <label>?? Google AI API Key</label>
             <div class="password-wrapper">
-                <input type="password" id="apiKey" placeholder="AIzaSy... Å°¸¦ ÀÔ·ÂÇÏ¼¼¿ä">
+                <input type="password" id="apiKey" placeholder="AIzaSy... í‚¤ë¥¼ ì…ë ¥í•˜ì„¸ìš”">
             </div>
             <div class="save-key-check">
-                <input type="checkbox" id="saveKey"> <label for="saveKey" style="display:inline; margin:0; font-weight:normal; cursor:pointer;">ºê¶ó¿ìÀú¿¡ Å° ÀúÀå (·ÎÄÃ ½ºÅä¸®Áö)</label>
+                <input type="checkbox" id="saveKey"> <label for="saveKey" style="display:inline; margin:0; font-weight:normal; cursor:pointer;">ë¸Œë¼ìš°ì €ì— í‚¤ ì €ì¥ (ë¡œì»¬ ìŠ¤í† ë¦¬ì§€)</label>
             </div>
         </div>
 
-        <div class="section-title">?? ºñÀÚ ¸Å´º¾ó/ÁöÄ§ ¾÷·Îµå (PDF)</div>
+        <div class="section-title">?? ë¹„ì ë§¤ë‰´ì–¼/ì§€ì¹¨ ì—…ë¡œë“œ (PDF)</div>
         <div class="upload-zone" id="dropZone">
             <input type="file" id="pdfFile" accept="application/pdf" style="display: none;">
-            <p style="margin:0; color:#666;">¹ı¹«ºÎ ÃÖ½Å ¸Å´º¾ó(PDF)À» ¼±ÅÃÇÏ¼¼¿ä.</p>
+            <p style="margin:0; color:#666;">ë²•ë¬´ë¶€ ìµœì‹  ë§¤ë‰´ì–¼(PDF)ì„ ì„ íƒí•˜ì„¸ìš”.</p>
             <div class="upload-btn-wrap">
-                <button class="btn-upload" onclick="document.getElementById('pdfFile').click()">ÆÄÀÏ ¼±ÅÃ</button>
-                <button class="btn-upload" style="background-color: var(--primary);" onclick="uploadFile()">¼­¹ö Àü¼Û(Upload)</button>
+                <button class="btn-upload" onclick="document.getElementById('pdfFile').click()">íŒŒì¼ ì„ íƒ</button>
+                <button class="btn-upload" style="background-color: var(--primary);" onclick="uploadFile()">ì„œë²„ ì „ì†¡(Upload)</button>
             </div>
-            <div id="file-status">ÆÄÀÏÀÌ ¼±ÅÃµÇÁö ¾Ê¾Ò½À´Ï´Ù.</div>
+            <div id="file-status">íŒŒì¼ì´ ì„ íƒë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.</div>
         </div>
 
-        <div class="section-title">?? ÀÇ·ÚÀÎ Á¤º¸ ÀÔ·Â</div>
+        <div class="section-title">?? ì˜ë¢°ì¸ ì •ë³´ ì…ë ¥</div>
         <div class="row">
             <div class="col form-group">
-                <label>ÇöÀç Ã¼·ù ÀÚ°İ</label>
-                <input type="text" id="visaType" value="E-9 (ºñÀü¹®Ãë¾÷)" placeholder="¿¹: E-9, D-2">
+                <label>í˜„ì¬ ì²´ë¥˜ ìê²©</label>
+                <input type="text" id="visaType" value="E-9 (ë¹„ì „ë¬¸ì·¨ì—…)" placeholder="ì˜ˆ: E-9, D-2">
             </div>
             <div class="col form-group">
-                <label>»ı³â¿ùÀÏ (³ªÀÌ)</label>
-                <input type="text" id="age" value="1995³â»ı (¸¸ 29¼¼)" placeholder="¿¹: 1990³â»ı">
+                <label>ìƒë…„ì›”ì¼ (ë‚˜ì´)</label>
+                <input type="text" id="age" value="1995ë…„ìƒ (ë§Œ 29ì„¸)" placeholder="ì˜ˆ: 1990ë…„ìƒ">
             </div>
         </div>
 
         <div class="row">
             <div class="col form-group">
-                <label>Àü³âµµ ¼Òµæ (´ÜÀ§: ¸¸¿ø)</label>
+                <label>ì „ë…„ë„ ì†Œë“ (ë‹¨ìœ„: ë§Œì›)</label>
                 <input type="number" id="income" value="3800" placeholder="3800">
             </div>
             <div class="col form-group">
-                <label>ÇÑ±¹¾î ´É·Â (TOPIK/KIIP)</label>
+                <label>í•œêµ­ì–´ ëŠ¥ë ¥ (TOPIK/KIIP)</label>
                 <select id="koreanSkill">
-                    <option value="¾øÀ½">¾øÀ½</option>
-                    <option value="TOPIK 1±Ş">TOPIK 1±Ş</option>
-                    <option value="TOPIK 2±Ş">TOPIK 2±Ş</option>
-                    <option value="TOPIK 3±Ş" selected>TOPIK 3±Ş / KIIP 3´Ü°è</option>
-                    <option value="TOPIK 4±Ş">TOPIK 4±Ş / KIIP 4´Ü°è</option>
-                    <option value="TOPIK 5±Ş ÀÌ»ó">TOPIK 5±Ş ÀÌ»ó / KIIP 5´Ü°è</option>
-                    <option value="KIIP ÀÌ¼ö¿Ï·á">»çÈ¸ÅëÇÕÇÁ·Î±×·¥(KIIP) ÀÌ¼ö ¿Ï·á</option>
+                    <option value="ì—†ìŒ">ì—†ìŒ</option>
+                    <option value="TOPIK 1ê¸‰">TOPIK 1ê¸‰</option>
+                    <option value="TOPIK 2ê¸‰">TOPIK 2ê¸‰</option>
+                    <option value="TOPIK 3ê¸‰" selected>TOPIK 3ê¸‰ / KIIP 3ë‹¨ê³„</option>
+                    <option value="TOPIK 4ê¸‰">TOPIK 4ê¸‰ / KIIP 4ë‹¨ê³„</option>
+                    <option value="TOPIK 5ê¸‰ ì´ìƒ">TOPIK 5ê¸‰ ì´ìƒ / KIIP 5ë‹¨ê³„</option>
+                    <option value="KIIP ì´ìˆ˜ì™„ë£Œ">ì‚¬íšŒí†µí•©í”„ë¡œê·¸ë¨(KIIP) ì´ìˆ˜ ì™„ë£Œ</option>
                 </select>
             </div>
         </div>
 
         <div class="form-group">
-            <label>Ãß°¡ Æ¯ÀÌ»çÇ× (ÇĞ·Â, ÀÚ°İÁõ, ¹üÁË°æ·Â µî)</label>
-            <input type="text" id="details" value="±¹³» Àü¹®ÇĞ»ç Á¹¾÷, ¿ëÁ¢±â´É»ç º¸À¯, ¹ú±İÇü ¾øÀ½" placeholder="»ó¼¼ Á¤º¸¸¦ ÀÔ·ÂÇÏ¼¼¿ä">
+            <label>ì¶”ê°€ íŠ¹ì´ì‚¬í•­ (í•™ë ¥, ìê²©ì¦, ë²”ì£„ê²½ë ¥ ë“±)</label>
+            <input type="text" id="details" value="êµ­ë‚´ ì „ë¬¸í•™ì‚¬ ì¡¸ì—…, ìš©ì ‘ê¸°ëŠ¥ì‚¬ ë³´ìœ , ë²Œê¸ˆí˜• ì—†ìŒ" placeholder="ìƒì„¸ ì •ë³´ë¥¼ ì…ë ¥í•˜ì„¸ìš”">
         </div>
 
-        <button class="btn-primary" onclick="runAnalysis()">?? ¹ı·ü °ËÅä ¹× ºĞ¼® ½ÇÇà</button>
+        <button class="btn-primary" onclick="runAnalysis()">?? ë²•ë¥  ê²€í†  ë° ë¶„ì„ ì‹¤í–‰</button>
 
-        <div id="status-log">½Ã½ºÅÛ ´ë±â Áß...</div>
+        <div id="status-log">ì‹œìŠ¤í…œ ëŒ€ê¸° ì¤‘...</div>
 
         <div id="result-box">
             <div id="result-header">
-                <span>?? ¼öÀÓ ºĞ¼® º¸°í¼­</span>
+                <span>?? ìˆ˜ì„ ë¶„ì„ ë³´ê³ ì„œ</span>
                 <span style="font-size:0.8rem; font-weight:normal;">Generated by Gemini 1.5 Flash</span>
             </div>
             <div id="result-content"></div>
         </div>
 
         <div class="footer">
-            ¹ı¹«¹ıÀÎ ´ë¸² ¿Ü±¹ÀÎ »ç°Ç ºĞ¼® ½Ã½ºÅÛ <strong>ver 2.1</strong><br>
-            °ü¸®ÀÚ: »ç¹«Àå ÀÌ±ÔÈñ | ¹®ÀÇ: 02-0000-0000
+            ë²•ë¬´ë²•ì¸ ëŒ€ë¦¼ ì™¸êµ­ì¸ ì‚¬ê±´ ë¶„ì„ ì‹œìŠ¤í…œ <strong>ver 2.1</strong><br>
+            ê´€ë¦¬ì: ì‚¬ë¬´ì¥ ì´ê·œí¬ | ë¬¸ì˜: 02-0000-0000
         </div>
     </div>
 </div>
 
 <script>
     // --- Global State ---
-    let uploadedFileUri = null; // ¾÷·Îµå ¼º°ø ½Ã URI ÀúÀå
+    let uploadedFileUri = null; // ì—…ë¡œë“œ ì„±ê³µ ì‹œ URI ì €ì¥
 
     // --- 1. Initialization ---
     window.onload = function() {
@@ -250,7 +250,7 @@
         const fileInput = document.getElementById('pdfFile');
         fileInput.addEventListener('change', function() {
             if(fileInput.files.length > 0) {
-                document.getElementById('file-status').innerHTML = `¼±ÅÃµÊ: ${fileInput.files[0].name} (¾÷·Îµå ÇÊ¿ä)`;
+                document.getElementById('file-status').innerHTML = `ì„ íƒë¨: ${fileInput.files[0].name} (ì—…ë¡œë“œ í•„ìš”)`;
                 document.getElementById('file-status').className = '';
             }
         });
@@ -260,23 +260,20 @@
     function log(msg) {
         const box = document.getElementById('status-log');
         box.style.display = 'block';
+        // ê¹¨ì§„ ë¶€ë¶„ ë³µêµ¬: > í™”ì‚´í‘œ
         box.innerHTML += `> ${msg}\n`;
         box.scrollTop = box.scrollHeight;
     }
 
     function markdownToHtml(text) {
         let html = text
-            // Headers
             .replace(/^### (.*$)/gim, '<h3>$1</h3>')
             .replace(/^## (.*$)/gim, '<h2>$1</h2>')
             .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-            // Bold
             .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
-            // Lists
-            .replace(/^\s*-\s(.*$)/gim, '<ul><li>$1</li></ul>') // Naive list handle
-            .replace(/^\s*\d+\.\s(.*$)/gim, '<br><b>$1</b>') // Numbered lists nicely
-            .replace(/<\/ul>\s*<ul>/gim, '') // Merge adjacent lists
-            // Newlines
+            .replace(/^\s*-\s(.*$)/gim, '<ul><li>$1</li></ul>')
+            .replace(/^\s*\d+\.\s(.*$)/gim, '<br><b>$1</b>')
+            .replace(/<\/ul>\s*<ul>/gim, '')
             .replace(/\n/g, '<br>');
         return html;
     }
@@ -286,17 +283,17 @@
         const apiKey = document.getElementById('apiKey').value.trim();
         const fileInput = document.getElementById('pdfFile');
 
-        if(!apiKey) return alert("¸ÕÀú API Å°¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä.");
-        if(fileInput.files.length === 0) return alert("¾÷·ÎµåÇÒ PDF ÆÄÀÏÀ» ¼±ÅÃÇØÁÖ¼¼¿ä.");
+        if(!apiKey) return alert("ë¨¼ì € API í‚¤ë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”.");
+        if(fileInput.files.length === 0) return alert("ì—…ë¡œë“œí•  PDF íŒŒì¼ì„ ì„ íƒí•´ì£¼ì„¸ìš”.");
 
         const file = fileInput.files[0];
         const fileSize = file.size;
         const displayName = file.name;
 
-        log("?? ÆÄÀÏ ¾÷·Îµå ÇÁ·Î¼¼½º ½ÃÀÛ...");
+        // ê¹¨ì§„ ë¶€ë¶„ ë³µêµ¬: ?? ì•„ì´ì½˜
+        log("?? íŒŒì¼ ì—…ë¡œë“œ í”„ë¡œì„¸ìŠ¤ ì‹œì‘...");
 
         try {
-            // Step A: Initiate Upload (Resumable)
             const initUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`;
             const initRes = await fetch(initUrl, {
                 method: 'POST',
@@ -309,12 +306,12 @@
                 body: JSON.stringify({ file: { display_name: displayName } })
             });
 
-            if(!initRes.ok) throw new Error(`ÃÊ±âÈ­ ½ÇÆĞ: ${initRes.statusText}`);
+            if(!initRes.ok) throw new Error(`ì´ˆê¸°í™” ì‹¤íŒ¨: ${initRes.statusText}`);
             
             const uploadUrl = initRes.headers.get('x-goog-upload-url');
-            log("?? ¾÷·Îµå °æ·Î È®º¸ ¿Ï·á. µ¥ÀÌÅÍ Àü¼Û Áß...");
+            // ê¹¨ì§„ ë¶€ë¶„ ë³µêµ¬: ?? ì•„ì´ì½˜
+            log("?? ì—…ë¡œë“œ ê²½ë¡œ í™•ë³´ ì™„ë£Œ. ë°ì´í„° ì „ì†¡ ì¤‘...");
 
-            // Step B: Upload Actual Bytes
             const uploadRes = await fetch(uploadUrl, {
                 method: 'POST',
                 headers: {
@@ -325,22 +322,23 @@
                 body: file 
             });
 
-            if(!uploadRes.ok) throw new Error(`Àü¼Û ½ÇÆĞ: ${uploadRes.statusText}`);
+            if(!uploadRes.ok) throw new Error(`ì „ì†¡ ì‹¤íŒ¨: ${uploadRes.statusText}`);
 
             const fileData = await uploadRes.json();
             uploadedFileUri = fileData.file.uri;
             
-            log(`? ¾÷·Îµå ¼º°ø! URI: ${uploadedFileUri}`);
-            log(`?? ÆÄÀÏ »óÅÂ: ${fileData.file.state} (ACTIVE »óÅÂ¿©¾ß ºĞ¼® °¡´É)`);
+            // ê¹¨ì§„ ë¶€ë¶„ ë³µêµ¬: ?, ?? ì•„ì´ì½˜
+            log(`? ì—…ë¡œë“œ ì„±ê³µ! URI: ${uploadedFileUri}`);
+            log(`?? íŒŒì¼ ìƒíƒœ: ${fileData.file.state} (ACTIVE ìƒíƒœì—¬ì•¼ ë¶„ì„ ê°€ëŠ¥)`);
             
             const statusBox = document.getElementById('file-status');
-            statusBox.innerHTML = `? ¾÷·Îµå ¿Ï·á (URI: ${uploadedFileUri.substring(0, 15)}...)`;
+            statusBox.innerHTML = `? ì—…ë¡œë“œ ì™„ë£Œ (URI: ${uploadedFileUri.substring(0, 15)}...)`;
             statusBox.className = 'status-ready';
 
         } catch (e) {
             console.error(e);
-            log(`? ¾÷·Îµå ¿À·ù: ${e.message}`);
-            alert(`ÆÄÀÏ ¾÷·Îµå Áß ¿À·ù°¡ ¹ß»ıÇß½À´Ï´Ù: ${e.message}`);
+            log(`? ì—…ë¡œë“œ ì˜¤ë¥˜: ${e.message}`);
+            alert(`íŒŒì¼ ì—…ë¡œë“œ ì¤‘ ì˜¤ë¥˜ê°€ ë°œìƒí–ˆìŠµë‹ˆë‹¤: ${e.message}`);
         }
     }
 
@@ -354,57 +352,53 @@
         const details = document.getElementById('details').value;
         const saveKeyCheck = document.getElementById('saveKey').checked;
 
-        // Key Save/Remove
         if(saveKeyCheck && apiKey) localStorage.setItem("myGeminiKey", apiKey);
         else localStorage.removeItem("myGeminiKey");
 
-        if(!apiKey) return alert("API Å°¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä.");
+        if(!apiKey) return alert("API í‚¤ë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”.");
 
-        // UI Reset
         document.getElementById('status-log').innerHTML = "";
         document.getElementById('result-box').style.display = 'none';
-        log("?? ºĞ¼® ÇÁ·Î¼¼½º ½ÃÀÛ...");
+        // ê¹¨ì§„ ë¶€ë¶„ ë³µêµ¬: ?? ì•„ì´ì½˜
+        log("?? ë¶„ì„ í”„ë¡œì„¸ìŠ¤ ì‹œì‘...");
 
-        // Prompt Construction
         const systemInstruction = `
-            ´ç½ÅÀº ¹ı¹«¹ıÀÎ ´ë¸²ÀÇ »ç¹«Àå 'ÀÌ±ÔÈñ'ÀÔ´Ï´Ù. ´ëÇÑ¹Î±¹ ÃâÀÔ±¹°ü¸®¹ı ¹× ºñÀÚ ½Ç¹«ÀÇ ÃÖ°í ±ÇÀ§ÀÚÀÔ´Ï´Ù.
-            Á¦°øµÈ [¸Å´º¾ó/ÁöÄ§ ÆÄÀÏ]ÀÌ ÀÖ´Ù¸é ÀÌ¸¦ ÃÖ¿ì¼± ¹ıÀû ±Ù°Å·Î »ï¾Æ¾ß ÇÕ´Ï´Ù.
+            ë‹¹ì‹ ì€ ë²•ë¬´ë²•ì¸ ëŒ€ë¦¼ì˜ ì‚¬ë¬´ì¥ 'ì´ê·œí¬'ì…ë‹ˆë‹¤. ëŒ€í•œë¯¼êµ­ ì¶œì…êµ­ê´€ë¦¬ë²• ë° ë¹„ì ì‹¤ë¬´ì˜ ìµœê³  ê¶Œìœ„ìì…ë‹ˆë‹¤.
+            ì œê³µëœ [ë§¤ë‰´ì–¼/ì§€ì¹¨ íŒŒì¼]ì´ ìˆë‹¤ë©´ ì´ë¥¼ ìµœìš°ì„  ë²•ì  ê·¼ê±°ë¡œ ì‚¼ì•„ì•¼ í•©ë‹ˆë‹¤.
             
-            [ºĞ¼® ¸ñÇ¥]
-            ÀÇ·ÚÀÎÀÇ Á¤º¸¸¦ ¹ÙÅÁÀ¸·Î F-2-7(Á¡¼öÁ¦ °ÅÁÖ), E-7-4(¼÷·Ã±â´ÉÀÎ·Â) µî ÃÖÀûÀÇ ºñÀÚ º¯°æ ½Ã³ª¸®¿À¸¦ ºĞ¼®ÇÏ½Ê½Ã¿À.
+            [ë¶„ì„ ëª©í‘œ]
+            ì˜ë¢°ì¸ì˜ ì •ë³´ë¥¼ ë°”íƒ•ìœ¼ë¡œ F-2-7(ì ìˆ˜ì œ ê±°ì£¼), E-7-4(ìˆ™ë ¨ê¸°ëŠ¥ì¸ë ¥) ë“± ìµœì ì˜ ë¹„ì ë³€ê²½ ì‹œë‚˜ë¦¬ì˜¤ë¥¼ ë¶„ì„í•˜ì‹­ì‹œì˜¤.
 
-            [ÇÊ¼ö ÁØ¼ö »çÇ×]
-            1. Á¡¼ö °è»ê ½Ã ÃÖ½Å GNI(±¹¹ÎÃÑ¼Òµæ)¸¦ ±âÁØÀ¸·Î ÇÏµÇ, ±âÁØ ³âµµ°¡ ¸íÈ®ÇÏÁö ¾ÊÀ¸¸é 2024³â ±âÁØ(¾à 4,400¸¸¿ø ´ë)À» Âü°íÇÏµÇ º¸¼öÀûÀ¸·Î ÀâÀ¸½Ê½Ã¿À.
-            2. ´Ü¼ø Á¡¼ö °è»êÀ» ³Ñ¾î, ½Ç¹«¿¡¼­ ÀÚÁÖ ¹ß»ıÇÏ´Â '¹İ·Á »çÀ¯(¹üÁË°æ·Â, ¼¼±İÃ¼³³, ¼ÒµæÀÔÁõ ¹æ½Ä Â÷ÀÌ)'¸¦ °æ°íÇÏ½Ê½Ã¿À.
-            3. ´äº¯ Åæ¾Ø¸Å³Ê: Àü¹®ÀûÀÌ°í ½Å·Ú°¨ ÀÖ°Ô, ÀÇ·ÚÀÎ¿¡°Ô º¸°í¼­¸¦ Á¦ÃâÇÏ´Â Çü½Ä ("~ÇÕ´Ï´Ù", "~°ÍÀ¸·Î »ç·áµË´Ï´Ù").
+            [í•„ìˆ˜ ì¤€ìˆ˜ ì‚¬í•­]
+            1. ì ìˆ˜ ê³„ì‚° ì‹œ ìµœì‹  GNI(êµ­ë¯¼ì´ì†Œë“)ë¥¼ ê¸°ì¤€ìœ¼ë¡œ í•˜ë˜, ê¸°ì¤€ ë…„ë„ê°€ ëª…í™•í•˜ì§€ ì•Šìœ¼ë©´ 2024ë…„ ê¸°ì¤€(ì•½ 4,400ë§Œì› ëŒ€)ì„ ì°¸ê³ í•˜ë˜ ë³´ìˆ˜ì ìœ¼ë¡œ ì¡ìœ¼ì‹­ì‹œì˜¤.
+            2. ë‹¨ìˆœ ì ìˆ˜ ê³„ì‚°ì„ ë„˜ì–´, ì‹¤ë¬´ì—ì„œ ìì£¼ ë°œìƒí•˜ëŠ” 'ë°˜ë ¤ ì‚¬ìœ (ë²”ì£„ê²½ë ¥, ì„¸ê¸ˆì²´ë‚©, ì†Œë“ì…ì¦ ë°©ì‹ ì°¨ì´)'ë¥¼ ê²½ê³ í•˜ì‹­ì‹œì˜¤.
+            3. ë‹µë³€ í†¤ì•¤ë§¤ë„ˆ: ì „ë¬¸ì ì´ê³  ì‹ ë¢°ê° ìˆê²Œ, ì˜ë¢°ì¸ì—ê²Œ ë³´ê³ ì„œë¥¼ ì œì¶œí•˜ëŠ” í˜•ì‹ ("~í•©ë‹ˆë‹¤", "~ê²ƒìœ¼ë¡œ ì‚¬ë£Œë©ë‹ˆë‹¤").
         `;
 
         const userPrompt = `
-            [ÀÇ·ÚÀÎ Á¤º¸]
-            - ÇöÀç ºñÀÚ: ${visa}
-            - »ı³â¿ùÀÏ/³ªÀÌ: ${age}
-            - ¿¬°£ ¼Òµæ: ${income}¸¸¿ø
-            - ÇÑ±¹¾î ´É·Â: ${korean}
-            - Æ¯ÀÌ»çÇ×: ${details}
+            [ì˜ë¢°ì¸ ì •ë³´]
+            - í˜„ì¬ ë¹„ì: ${visa}
+            - ìƒë…„ì›”ì¼/ë‚˜ì´: ${age}
+            - ì—°ê°„ ì†Œë“: ${income}ë§Œì›
+            - í•œêµ­ì–´ ëŠ¥ë ¥: ${korean}
+            - íŠ¹ì´ì‚¬í•­: ${details}
 
-            À§ Á¤º¸¸¦ ¹ÙÅÁÀ¸·Î ºñÀÚ º¯°æ °¡´É¼ºÀ» Áø´ÜÇÏ°í, 
-            1. F-2-7 Á¡¼öÇ¥¿¡ µû¸¥ °¡»ó µæÁ¡ »ó¼¼ ³»¿ª
-            2. E-7-4 ÀüÈ¯ °¡´É¼º
-            3. Á¾ÇÕ ¼öÀÓ ÀÇ°ß ¹× º¸¿Ï ÇÊ¿ä »çÇ×(±¸Ã¼Àû Àü·«)
-            À» ¸¶Å©´Ù¿î Çü½ÄÀ¸·Î ÀÛ¼ºÇØ ÁÖ¼¼¿ä.
+            ìœ„ ì •ë³´ë¥¼ ë°”íƒ•ìœ¼ë¡œ ë¹„ì ë³€ê²½ ê°€ëŠ¥ì„±ì„ ì§„ë‹¨í•˜ê³ , 
+            1. F-2-7 ì ìˆ˜í‘œì— ë”°ë¥¸ ê°€ìƒ ë“ì  ìƒì„¸ ë‚´ì—­
+            2. E-7-4 ì „í™˜ ê°€ëŠ¥ì„±
+            3. ì¢…í•© ìˆ˜ì„ ì˜ê²¬ ë° ë³´ì™„ í•„ìš” ì‚¬í•­(êµ¬ì²´ì  ì „ëµ)
+            ì„ ë§ˆí¬ë‹¤ìš´ í˜•ì‹ìœ¼ë¡œ ì‘ì„±í•´ ì£¼ì„¸ìš”.
         `;
 
         try {
-            // Construct Payload
             const contents = [];
             const parts = [];
 
-            // Add Text Prompt
             parts.push({ text: userPrompt });
 
-            // Add File Data if exists
             if (uploadedFileUri) {
-                log("?? ¾÷·ÎµåµÈ ¸Å´º¾ó ÆÄÀÏÀ» ÄÁÅØ½ºÆ®¿¡ Æ÷ÇÔÇÕ´Ï´Ù.");
+                // ê¹¨ì§„ ë¶€ë¶„ ë³µêµ¬: ?? ì•„ì´ì½˜
+                log("?? ì—…ë¡œë“œëœ ë§¤ë‰´ì–¼ íŒŒì¼ì„ ì»¨í…ìŠ¤íŠ¸ì— í¬í•¨í•©ë‹ˆë‹¤.");
                 parts.push({ 
                     file_data: { 
                         mime_type: "application/pdf", 
@@ -412,20 +406,20 @@
                     } 
                 });
             } else {
-                log("?? ÆÄÀÏ ¾øÀÌ ±âº» Áö½ÄÀ¸·Î¸¸ ºĞ¼®ÇÕ´Ï´Ù. (Á¤È®µµ ÇÏ¶ô °¡´É)");
+                // ê¹¨ì§„ ë¶€ë¶„ ë³µêµ¬: ?? ì•„ì´ì½˜
+                log("?? íŒŒì¼ ì—†ì´ ê¸°ë³¸ ì§€ì‹ìœ¼ë¡œë§Œ ë¶„ì„í•©ë‹ˆë‹¤. (ì •í™•ë„ í•˜ë½ ê°€ëŠ¥)");
             }
 
             contents.push({ parts: parts });
 
-            // Call Generate Content API
-            log("? Gemini 1.5 Flash ¸ğµ¨¿¡ ºĞ¼® ¿äÃ» Áß...");
+            // ê¹¨ì§„ ë¶€ë¶„ ë³µêµ¬: ? ì•„ì´ì½˜
+            log("? Gemini 1.5 Flash ëª¨ë¸ì— ë¶„ì„ ìš”ì²­ ì¤‘...");
             
-            // Note: System Instructions are better handled in 'system_instruction' field but here simplify to prompt for vanilla structure compatibility or include in system_instruction field
             const reqBody = {
                 contents: contents,
                 system_instruction: { parts: [{ text: systemInstruction }] },
                 generationConfig: {
-                    temperature: 0.4, // ¹ı·ü ºĞ¼®ÀÌ¹Ç·Î Ã¢ÀÇ¼º ³·Ãã
+                    temperature: 0.4, 
                     maxOutputTokens: 2000
                 }
             };
@@ -444,19 +438,20 @@
 
             if(data.candidates && data.candidates[0].content) {
                 const resultText = data.candidates[0].content.parts[0].text;
-                log("? ºĞ¼® ¿Ï·á. °á°ú ¸®Æ÷Æ®¸¦ »ı¼ºÇÕ´Ï´Ù.");
+                // ê¹¨ì§„ ë¶€ë¶„ ë³µêµ¬: ? ì•„ì´ì½˜
+                log("? ë¶„ì„ ì™„ë£Œ. ê²°ê³¼ ë¦¬í¬íŠ¸ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.");
                 
                 document.getElementById('result-content').innerHTML = markdownToHtml(resultText);
                 document.getElementById('result-box').style.display = 'block';
-                document.getElementById('status-log').style.display = 'none'; // ¼º°ø ½Ã ·Î±× ¼û±è
+                document.getElementById('status-log').style.display = 'none'; 
             } else {
-                throw new Error("ÀÀ´ä µ¥ÀÌÅÍ°¡ ºñ¾îÀÖ½À´Ï´Ù. (Safety Filter µî È®ÀÎ ÇÊ¿ä)");
+                throw new Error("ì‘ë‹µ ë°ì´í„°ê°€ ë¹„ì–´ìˆìŠµë‹ˆë‹¤. (Safety Filter ë“± í™•ì¸ í•„ìš”)");
             }
 
         } catch (e) {
             console.error(e);
-            log(`? Ä¡¸íÀû ¿À·ù: ${e.message}`);
-            alert(`ºĞ¼® Áß ¿À·ù ¹ß»ı: ${e.message}`);
+            log(`? ì¹˜ëª…ì  ì˜¤ë¥˜: ${e.message}`);
+            alert(`ë¶„ì„ ì¤‘ ì˜¤ë¥˜ ë°œìƒ: ${e.message}`);
         }
     }
 </script>
