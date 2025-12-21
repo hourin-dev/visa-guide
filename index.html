@@ -3,19 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.0</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.2</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
             --success: #27ae60; --bg: #f4f7f6; --white: #ffffff; --border: #d1d8e0;
         }
         body { font-family: 'Pretendard', sans-serif; background: var(--bg); padding: 20px; display: flex; justify-content: center; margin: 0; color: #2c3e50; }
-        .container { width: 100%; max-width: 800px; background: var(--white); border-radius: 15px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); overflow: hidden; }
+        .container { width: 100%; max-width: 850px; background: var(--white); border-radius: 15px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); overflow: hidden; }
         
+        /* 헤더 버전 표시 추가 */
         .header { background: var(--primary); color: white; padding: 40px 30px; text-align: center; border-bottom: 5px solid var(--accent); position: relative; }
+        .header .ver-badge { position: absolute; top: 15px; right: 20px; background: var(--accent); color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
         .header h1 { margin: 0; font-size: 1.9rem; letter-spacing: 1px; font-weight: 800; }
         .header .sub-lawfirm { font-size: 0.9rem; opacity: 0.7; margin-bottom: 5px; display: block; }
         .header p { margin: 10px 0 0; font-size: 1rem; opacity: 0.9; font-weight: 300; }
+        
         .officer-info { margin-top: 15px; font-size: 0.95rem; color: #ecf0f1; background: rgba(255,255,255,0.1); display: inline-block; padding: 12px 25px; border-radius: 8px; }
         .contact-info { display: block; font-size: 0.9rem; margin-top: 8px; color: #f1c40f; font-weight: 600; }
 
@@ -24,8 +27,6 @@
         .status-badge { font-size: 0.75rem; padding: 5px 12px; border-radius: 50px; color: white; font-weight: 500; }
         .status-wait { background: #7f8c8d; }
         .status-active { background: var(--success); }
-        .status-error { background: var(--accent); animation: blink 1s infinite; }
-        @keyframes blink { 0%, 100% {opacity: 1;} 50% {opacity: 0.6;} }
 
         .form-group { margin-bottom: 25px; }
         .form-group label { display: block; font-weight: 600; margin-bottom: 10px; font-size: 0.95rem; color: var(--secondary); }
@@ -37,19 +38,20 @@
         .btn-primary { width: 100%; padding: 20px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.2rem; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 15px; }
         .btn-primary:hover { background: #2c3e50; transform: translateY(-2px); }
         
-        #status-log { margin-top: 20px; padding: 15px; background: #1e1e1e; color: #00ff00; font-family: monospace; font-size: 0.85rem; border-radius: 8px; display: none; max-height: 150px; overflow-y: auto; white-space: pre-wrap; }
+        #status-log { margin-top: 20px; padding: 15px; background: #1e1e1e; color: #00ff00; font-family: monospace; font-size: 0.85rem; border-radius: 8px; display: none; max-height: 150px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
         #result-box { margin-top: 35px; display: none; border: 1px solid #ddd; border-radius: 12px; overflow: hidden; background: #fff; border-top: 4px solid var(--primary); }
         #result-header { background: #f8f9fa; padding: 20px; border-bottom: 1px solid #eee; font-weight: 800; color: var(--primary); display: flex; justify-content: space-between; align-items: center; }
-        #result-content { padding: 35px; line-height: 1.9; white-space: pre-wrap; font-size: 1.05rem; color: #34495e; }
+        #result-content { padding: 35px; line-height: 1.9; white-space: pre-wrap; word-wrap: break-word; font-size: 1.05rem; color: #34495e; overflow-x: hidden; }
         
         .footer { text-align: center; padding: 30px; font-size: 0.85rem; color: #95a5a6; border-top: 1px solid #eee; margin-top: 40px; }
-        .ver-info { font-size: 0.75rem; color: #bdc3c7; display: block; margin-top: 10px; }
+        .ver-info { font-size: 0.75rem; color: #bdc3c7; display: block; margin-top: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
+        <span class="ver-badge">v1.1.2 Latest</span>
         <small class="sub-lawfirm">법무법인 대림 (DAELIM)</small>
         <h1>🇰🇷 비자 추천 & 체류 행정 전문가 분석</h1>
         <p>인공지능 기반 자격 변경 및 승인 가능성 정밀 진단</p>
@@ -118,27 +120,28 @@
 
         <div id="result-box">
             <div id="result-header">
-                <span>📄 비자 수임 가능성 진단 리포트 (E-7-4 / E-7-4-R / F-2-R / F-4-R / F-2-7)</span>
-                <span style="font-size:0.8rem; font-weight:normal;">이규희 사무장 분석 시스템 v1.1.0</span>
+                <span>📄 비자 수임 가능성 진단 리포트 (종합)</span>
+                <span style="font-size:0.8rem; font-weight:normal;">Analysis Engine v1.1.2</span>
             </div>
             <div id="result-content"></div>
         </div>
     </div>
     <div class="footer">
         서울특별시 영등포구 | 법무법인 대림 비자전담팀
-        <span class="ver-info">System Version v1.1.0 (Regional Specialization Focus)</span>
+        <span class="ver-info">System Version v1.1.2 (Updated: 2025-12-21)</span>
     </div>
 </div>
 
 <script>
     let uploadedFileUri = null;
+    const VERSION = "v1.1.2";
 
     window.onload = function() {
         const savedKey = localStorage.getItem("daelim_api_key");
         if(savedKey) {
             document.getElementById('apiKey').value = savedKey;
             document.getElementById('saveKey').checked = true;
-            log("✅ 저장된 보안 인증 정보를 불러왔습니다.");
+            log(`✅ [${VERSION}] 저장된 보안 인증 정보를 불러왔습니다.`);
         }
     }
 
@@ -180,7 +183,7 @@
         if(!apiKey || !uploadedFileUri) return alert("인증 키 입력과 지침 파일 업로드가 선행되어야 합니다.");
         checkAndSaveKey();
 
-        document.getElementById('status-log').innerHTML = "--- 분석 엔진 v1.1.0 가동 (E-7-4-R / F-4-R 추가 모드) ---\n";
+        document.getElementById('status-log').innerHTML = `--- 분석 엔진 ${VERSION} 가동 (결과 보완 모드) ---\n`;
         document.getElementById('result-box').style.display = 'none';
 
         try {
@@ -189,46 +192,45 @@
             const usableModels = listData.models.filter(m => m.supportedGenerationMethods.includes("generateContent")).reverse();
 
             const prompt = `
-            당신은 [법무법인 대림]의 [이규희 사무장]입니다.
-            업로드된 PDF 매뉴얼을 기반으로 의뢰인의 비자 변경 가능성을 E-7-4, E-7-4-R(지역특화 숙련기능), F-2-R(지역특화 우수인재), F-4-R(지역특화 재외동포), F-2-7 중심으로 정밀 분석하십시오.
+            당신은 법무법인 대림의 이규희 사무장입니다. 
+            첨부된 PDF 매뉴얼을 바탕으로 다음 의뢰인의 비자 변경 가능성(E-7-4, E-7-4-R, F-2-R, F-4-R, F-2-7)을 정밀 분석하십시오.
 
             [의뢰인 데이터]
-            현재 체격: ${document.getElementById('visaType').value}, 나이: ${document.getElementById('age').value}, 소득: ${document.getElementById('income').value}만원, 한국어: ${document.getElementById('koreanSkill').value}, 특이사항: ${document.getElementById('details').value}
+            현재: ${document.getElementById('visaType').value}, 연령: ${document.getElementById('age').value}, 소득: ${document.getElementById('income').value}만원, 한국어: ${document.getElementById('koreanSkill').value}, 기타: ${document.getElementById('details').value}
 
-            [분석 지침]
-            1. 인사말: "안녕하십니까, 법무법인 대림의 이규희 사무장입니다. (연락처: 010-9798-1100)"
-            2. 성공 확률 랭킹 (이모티콘 필수):
-               🥇 1순위: [비자명] (확률 %), 🥈 2순위: [비자명] (확률 %), 🥉 3순위: [비자명] (확률 %)
-            3. 신규 비자 정밀 분석 (E-7-4-R, F-4-R 포함):
-               - E-7-4-R: 인구감소지역 기업체 취업 및 지자체 추천 요건 확인.
-               - F-4-R: 재외동포 가족 동반 정착 및 지역 내 활동 의무 사항 강조.
-               - 소득 요건: 2024년 GNI(4,405만원) 기준 충족 여부 계산.
-            4. 지역특화형 비자(R계열)의 실거주 및 취업 유지 의무(보통 2년) 경고.
-            5. 사무장 보완 전략: 지자체 추천서 확보 방법 등 수임 성공률을 높이기 위한 로드맵 제공.
+            [분석 요청 사항]
+            1. 첫 인사 및 사무장 소개 (연락처 포함)
+            2. 성공 확률 TOP 3 랭킹 (🥇, 🥈, 🥉 기호 사용)
+            3. 비자별 상세 진단 (요건 충족 여부, GNI 70% 소득 계산, 지역특화 추천 가능성 등)
+            4. 결격 사유 및 실무적 주의사항
+            5. 사무장만의 보완 로드맵
+
+            * 중요: 답변이 끊기지 않도록 구조적으로 서술하십시오.
             `;
 
             let success = false;
             for(let model of usableModels) {
-                log(`⏳ [${model.name.split('/')[1]}] 고도화된 지역특화 분석 시퀀스 작동 중...`);
+                log(`⏳ [${model.name.split('/')[1]}] 분석 시퀀스 작동 중...`);
                 try {
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model.name}:generateContent?key=${apiKey}`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             contents: [{ parts: [{ text: prompt }, { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }] }],
-                            generationConfig: { temperature: 0.1, maxOutputTokens: 8192 }
+                            generationConfig: { temperature: 0.2, maxOutputTokens: 8192, topP: 0.95 }
                         })
                     });
                     const data = await res.json();
-                    if(data.candidates) {
-                        document.getElementById('result-content').innerHTML = data.candidates[0].content.parts[0].text.replace(/\n/g, "<br>");
+                    if(data.candidates && data.candidates[0].content) {
+                        const output = data.candidates[0].content.parts[0].text;
+                        document.getElementById('result-content').innerHTML = output.split('\n').map(line => line.trim()).join('\n').replace(/\n/g, "<br>");
                         document.getElementById('result-box').style.display = 'block';
                         document.getElementById('status-log').style.display = 'none';
                         success = true; break;
                     }
-                } catch(e) { continue; }
+                } catch(e) { log(`⚠️ 모델 재시도 중...`); continue; }
             }
-            if(!success) throw new Error("모델 연결 실패");
-        } catch(e) { log("❌ 실패: " + e.message); }
+            if(!success) throw new Error("분석 도중 연결이 원활하지 않습니다.");
+        } catch(e) { log("❌ 오류: " + e.message); }
     }
 </script>
 </body>
