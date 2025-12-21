@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.3.0</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.3.1</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -28,9 +28,8 @@
         .btn-primary { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.3s; }
         .btn-primary:hover { background: #2c3e50; transform: translateY(-2px); }
         .btn-primary:disabled { background: #95a5a6; cursor: wait; }
-        #status-log { margin-top: 20px; padding: 15px; background: #1e1e1e; color: #00ff00; font-family: monospace; font-size: 0.8rem; border-radius: 8px; display: none; max-height: 100px; overflow-y: auto; white-space: pre-wrap; }
+        #status-log { margin-top: 20px; padding: 15px; background: #1e1e1e; color: #00ff00; font-family: monospace; font-size: 0.8rem; border-radius: 8px; display: none; max-height: 120px; overflow-y: auto; white-space: pre-wrap; }
         #result-box { margin-top: 30px; display: none; border: 1px solid #ddd; border-radius: 12px; background: #fff; border-top: 4px solid var(--primary); }
-        #result-header { background: #f8f9fa; padding: 20px; border-bottom: 1px solid #eee; font-weight: 800; color: var(--primary); }
         #result-content { padding: 35px; line-height: 1.9; white-space: pre-wrap; font-size: 1.05rem; color: #34495e; max-height: 800px; overflow-y: auto; }
         .loading-dots:after { content: ' .'; animation: dots 1s steps(5, end) infinite; }
         @keyframes dots { 0%, 20% { content: ' .'; } 40% { content: ' ..'; } 60% { content: ' ...'; } 80%, 100% { content: ''; } }
@@ -39,10 +38,10 @@
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.3.0 Standard</span>
+        <span class="ver-badge">v1.3.1 Stable</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>🇰🇷 비자 추천 & 체류 행정 전문가 분석</h1>
-        <div class="officer-info">담당자: <strong>이규희 사무장 (010-9778-1100)</strong></div>
+        <div class="officer-info">담당자: <strong>이규희 사무장 (010-9798-1100)</strong></div>
     </div>
     <div class="content">
         <div class="form-group">
@@ -77,12 +76,11 @@
                         <option value="TOPIK 5급" selected>TOPIK 5급</option>
                         <option value="TOPIK 4급">TOPIK 4급</option>
                         <option value="TOPIK 3급">TOPIK 3급</option>
-                        <option value="TOPIK 2급 이하">TOPIK 1~2급 / 미보유</option>
+                        <option value="TOPIK 1~2급 / 미보유">TOPIK 2급 이하 / 없음</option>
                     </optgroup>
                     <optgroup label="KIIP (사회통합프로그램)">
                         <option value="KIIP 5단계 이수 완료">5단계 이수 완료</option>
-                        <option value="KIIP 4단계 이수">4단계 합격(중급2)</option>
-                        <option value="KIIP 3단계 이수">3단계 합격(중급1)</option>
+                        <option value="KIIP 4단계 합격">4단계 합격(중급2)</option>
                         <option value="KIIP 사전평가 85점↑">사전평가 85점↑ (5단계)</option>
                         <option value="KIIP 사전평가 61~84점">사전평가 61~84점 (3,4단계)</option>
                     </optgroup>
@@ -95,7 +93,7 @@
         
         <div id="status-log"></div>
         <div id="result-box">
-            <div id="result-header" style="padding:20px;">📄 비자 분석 리포트</div>
+            <div id="result-header" style="padding:20px;">📄 비자 분석 리포트 (Stable v1.3.1)</div>
             <div id="result-content"></div>
         </div>
     </div>
@@ -105,12 +103,12 @@
     let uploadedFileUri = null;
 
     window.onload = function() {
-        const savedKey = localStorage.getItem("daelim_key_v130");
+        const savedKey = localStorage.getItem("daelim_visa_key_v131");
         if(savedKey) { document.getElementById('apiKey').value = savedKey; }
     }
     function saveKey() {
         if(document.getElementById('chkSaveKey').checked) {
-            localStorage.setItem("daelim_key_v130", document.getElementById('apiKey').value.trim());
+            localStorage.setItem("daelim_visa_key_v131", document.getElementById('apiKey').value.trim());
         }
     }
 
@@ -140,28 +138,28 @@
     }
 
     async function runAnalysis() {
-        const key = document.getElementById('apiKey').value.trim();
-        if(!key || !uploadedFileUri) return alert("동기화를 먼저 완료해 주세요.");
+        const apiKey = document.getElementById('apiKey').value.trim();
+        if(!apiKey || !uploadedFileUri) return alert("동기화를 먼저 완료해 주세요.");
         const btn = document.getElementById('run-btn');
         const content = document.getElementById('result-content');
         
         btn.disabled = true;
-        btn.innerHTML = "<span class='loading-dots'>지침서 분석 및 결과 생성 중</span>";
+        btn.innerHTML = "<span class='loading-dots'>지침 분석 및 분석 리포트 생성 중</span>";
         document.getElementById('result-box').style.display = 'block';
-        content.innerHTML = "<div style='text-align:center; padding:50px; color:var(--secondary);'>사무장님, AI가 매뉴얼을 기반으로 정밀 분석 중입니다.<br>잠시만 기다려 주세요 (약 20초 소요).</div>";
-        log("🚀 분석 시퀀스 작동 중...");
+        content.innerHTML = "<div style='text-align:center; padding:50px; color:var(--secondary);'>사무장님, AI가 매뉴얼을 기반으로 비자 수임 가능성을 정밀 분석 중입니다.<br>잠시만 기다려 주세요 (약 20~30초 소요).</div>";
+        log("🚀 분석 엔진 가동 시작...");
 
         try {
-            // 모델 호출 경로 수정: 'models/gemini-1.5-flash' 표준 규격 사용
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+            // 표준 모델 호출 경로 적용 및 모델 선택 안정화
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{ parts: [
-                        { text: "당신은 법무법인 대림의 이규희 사무장(010-9778-1100)입니다. 리포트 최상단에 '담당자: 이규희 사무장 (010-9778-1100)'을 출력하고, 의뢰인 비자(E-7-4, E-7-4-R, F-2-R, F-4-R, F-2-7) 성공 확률을 2024 GNI(4,405만원) 기준으로 분석하십시오." },
+                        { text: "당신은 법무법인 대림의 이규희 사무장(010-9798-1100)입니다. 리포트 최상단에 '담당자: 이규희 사무장 (010-9798-1100)'을 출력하고, 의뢰인의 비자(E-7-4, E-7-4-R, F-2-R, F-4-R, F-2-7) 성공 확률을 2024 GNI(4,405만원) 기준으로 상세히 분석하십시오." },
                         { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                     ] }],
-                    generationConfig: { temperature: 0.1, maxOutputTokens: 2048 }
+                    generationConfig: { temperature: 0.1, maxOutputTokens: 8192 }
                 })
             });
 
@@ -171,11 +169,30 @@
                 content.innerHTML = output.replace(/\n/g, "<br>");
                 log("✅ 분석 성공. 하단 리포트를 확인하십시오.");
             } else {
-                throw new Error(data.error ? data.error.message : "응답 데이터 없음");
+                // 모델을 flash로 전환하여 재시도 로직 (예외 처리)
+                throw new Error(data.error ? data.error.message : "응답 데이터가 비어 있습니다.");
             }
         } catch(e) { 
-            log("❌ 오류: " + e.message); 
-            content.innerHTML = `<div style="color:var(--accent); text-align:center; padding:30px;">[오류 발생]<br>${e.message}</div>`;
+            log("❌ 오류: " + e.message + " (모델 재호출 시도 중...)");
+            // Flash 모델로 2차 시도 (fallback)
+            try {
+                const fbRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [
+                            { text: "이규희 사무장입니다. 의뢰인의 비자 성공 확률을 분석해 주세요." },
+                            { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
+                        ] }]
+                    })
+                });
+                const fbData = await fbRes.json();
+                if(fbData.candidates) {
+                    content.innerHTML = fbData.candidates[0].content.parts[0].text.replace(/\n/g, "<br>");
+                    log("✅ 2차 모델로 분석 성공.");
+                } else throw new Error("모든 모델 연결 실패");
+            } catch(fe) {
+                content.innerHTML = `<div style="color:var(--accent); text-align:center; padding:30px;">[연결 오류]<br>${fe.message}</div>`;
+            }
         }
         finally { btn.disabled = false; btn.innerText = "⚖️ 이규희 사무장 정밀 분석 실행"; }
     }
