@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.2.0</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.2.1</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -23,7 +23,6 @@
         .row { display: flex; gap: 15px; margin-bottom: 5px; }
         .col { flex: 1; }
         .btn-primary { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
-        .btn-primary:disabled { background: #95a5a6; }
         #status-log { margin-top: 20px; padding: 15px; background: #1e1e1e; color: #00ff00; font-family: monospace; font-size: 0.8rem; border-radius: 8px; display: none; max-height: 100px; overflow-y: auto; }
         #result-box { margin-top: 30px; display: none; border: 1px solid #ddd; border-radius: 12px; background: #fff; border-top: 4px solid var(--primary); }
         #result-content { padding: 30px; line-height: 1.8; white-space: pre-wrap; font-size: 1rem; color: #34495e; max-height: 700px; overflow-y: auto; }
@@ -32,7 +31,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.2.0 Final</span>
+        <span class="ver-badge">v1.2.1 Stable</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>🇰🇷 비자 추천 & 체류 행정 정밀 분석</h1>
         <div class="officer-info">담당자: <strong>이규희 사무장 (010-9778-1100)</strong></div>
@@ -40,14 +39,19 @@
     <div class="content">
         <div class="form-group">
             <label>🔐 보안 인증 (API Key)</label>
-            <input type="password" id="apiKey" placeholder="보안 키를 입력하세요">
+            <input type="password" id="apiKey" placeholder="보안 키를 입력하세요" onchange="saveApiKey()">
+            <div style="font-size: 0.8rem; color: #7f8c8d; margin-top: 5px;">
+                <input type="checkbox" id="saveKey" checked> <label for="saveKey" style="cursor:pointer;">인증 정보 안전하게 저장</label>
+            </div>
         </div>
+
         <div class="section-title">📂 법무부 지침 동기화</div>
         <div style="text-align:center; padding: 20px; border: 2px dashed #ddd; border-radius: 10px; margin-bottom: 20px;">
             <input type="file" id="pdfFile" accept="application/pdf">
-            <button onclick="uploadFile()" style="padding:8px 15px; margin-top:10px; cursor:pointer;">데이터 전송</button>
+            <button onclick="uploadFile()" style="padding:8px 15px; margin-top:10px; cursor:pointer;">데이터 서버 전송</button>
         </div>
-        <div class="section-title">📝 의뢰인 상세 정보</div>
+
+        <div class="section-title">📝 의뢰인 데이터 (한국어 능력 상세)</div>
         <div class="row">
             <div class="col form-group"><label>현재 자격</label><input type="text" id="visaType" value="E-9"></div>
             <div class="col form-group"><label>연령 정보</label><input type="text" id="age" value="1995년생"></div>
@@ -55,42 +59,80 @@
         <div class="row">
             <div class="col form-group"><label>전년 소득(만원)</label><input type="number" id="income" value="4000"></div>
             <div class="col form-group">
-                <label>한국어 능력</label>
+                <label>한국어 능력 수준</label>
                 <select id="koreanSkill">
-                    <option value="TOPIK 5급↑">TOPIK 5급 이상</option>
-                    <option value="KIIP 5단계">사회통합 5단계 이수</option>
-                    <option value="KIIP 4단계">사회통합 4단계 이수</option>
-                    <option value="기타">기타 / 미보유</option>
+                    <optgroup label="TOPIK (한국어능력시험)">
+                        <option value="TOPIK 5급 이상" selected>TOPIK 5급 이상</option>
+                        <option value="TOPIK 4급">TOPIK 4급</option>
+                        <option value="TOPIK 3급">TOPIK 3급</option>
+                        <option value="TOPIK 1~2급 / 미보유">TOPIK 2급 이하 / 없음</option>
+                    </optgroup>
+                    <optgroup label="KIIP (사회통합프로그램)">
+                        <option value="KIIP 5단계 이수">5단계 이수 완료 (영주/귀화)</option>
+                        <option value="KIIP 4단계 합격">4단계 합격 (중급2)</option>
+                        <option value="KIIP 3단계 합격">3단계 합격 (중급1)</option>
+                        <option value="사전평가 85점↑ (5단계)">사전평가 85점↑ (5단계 배정)</option>
+                        <option value="사전평가 61~84점">사전평가 61~84점 (3,4단계)</option>
+                    </optgroup>
                 </select>
             </div>
         </div>
         <div class="form-group"><label>기타 특이사항</label><textarea id="details" rows="2">국내 전문학사 학위 보유.</textarea></div>
+        
         <button class="btn-primary" id="run-btn" onclick="runAnalysis()">⚖️ 이규희 사무장 정밀 분석 실행</button>
+        
         <div id="status-log"></div>
         <div id="result-box">
-            <div style="padding:15px; background:#f8f9fa; font-weight:800; border-bottom:1px solid #eee;">📄 실시간 분석 리포트</div>
+            <div style="padding:15px; background:#f8f9fa; font-weight:800; border-bottom:1px solid #eee;">📄 비자 분석 리포트</div>
             <div id="result-content"></div>
         </div>
     </div>
 </div>
+
 <script>
     let uploadedFileUri = null;
+
+    // 보안 키 저장 로직
+    window.onload = function() {
+        const savedKey = localStorage.getItem("visa_api_key");
+        if(savedKey) { document.getElementById('apiKey').value = savedKey; }
+    }
+    function saveApiKey() {
+        const key = document.getElementById('apiKey').value.trim();
+        if(document.getElementById('saveKey').checked) localStorage.setItem("visa_api_key", key);
+    }
+
     function log(msg) { const b = document.getElementById('status-log'); b.style.display = 'block'; b.innerText += `> ${msg}\n`; b.scrollTop = b.scrollHeight; }
 
+    // 업로드 로직 완전 보완 (Missing X- header 해결)
     async function uploadFile() {
         const key = document.getElementById('apiKey').value;
         const file = document.getElementById('pdfFile').files[0];
         if(!key || !file) return alert("키와 파일을 입력하세요.");
-        log("⏳ 파일 업로드 중...");
+        log("⏳ 데이터 서버 동기화 시작...");
         try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`, {
-                method: 'POST', headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
+            const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`, {
+                method: 'POST',
+                headers: { 
+                    'X-Goog-Upload-Protocol': 'resumable', 
+                    'X-Goog-Upload-Command': 'start', 
+                    'Content-Type': 'application/json' 
+                },
                 body: JSON.stringify({ file: { display_name: file.name } })
             });
-            const upRes = await fetch(res.headers.get('x-goog-upload-url'), { method: 'POST', headers: { 'X-Goog-Upload-Command': 'upload, finalize' }, body: file });
-            const data = await upRes.json();
+
+            const uploadUrl = startRes.headers.get('x-goog-upload-url');
+            if (!uploadUrl) throw new Error("서버 응답 오류 (URL 누락)");
+
+            const uploadRes = await fetch(uploadUrl, {
+                method: 'POST',
+                headers: { 'X-Goog-Upload-Command': 'upload, finalize', 'X-Goog-Upload-Offset': '0' },
+                body: file
+            });
+
+            const data = await uploadRes.json();
             uploadedFileUri = data.file.uri;
-            log("✅ 동기화 성공.");
+            log("✅ 동기화 완료.");
         } catch(e) { log("❌ 오류: " + e.message); }
     }
 
@@ -100,16 +142,16 @@
         const btn = document.getElementById('run-btn');
         const content = document.getElementById('result-content');
         btn.disabled = true;
-        content.innerHTML = "<div style='color:#c0392b;'>분석 리포트를 생성하고 있습니다. 잠시만 기다려 주세요...</div>";
+        content.innerHTML = "<div style='color:#c0392b;'>이규희 사무장 AI 엔진이 매뉴얼을 분석 중입니다...</div>";
         document.getElementById('result-box').style.display = 'block';
-        log("🚀 분석 엔진 가동...");
+        log("🚀 정밀 분석 시작...");
 
         try {
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:streamGenerateContent?key=${key}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{ parts: [
-                        { text: "당신은 법무법인 대림의 이규희 사무장(010-9778-1100)입니다. 최상단에 담당자 정보를 명시하고, 의뢰인의 비자(E-7-4, E-7-4-R, F-2-R, F-4-R, F-2-7) 성공 확률을 매뉴얼 기반으로 상세 분석하십시오." },
+                        { text: "당신은 법무법인 대림의 이규희 사무장(010-9778-1100)입니다. 리포트 최상단에 '담당자: 이규희 사무장 (010-9778-1100)'을 반드시 출력하고, 의뢰인 비자(E-7-4, E-7-4-R, F-2-R, F-4-R, F-2-7) 성공 확률을 분석하십시오." },
                         { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                     ] }],
                     generationConfig: { temperature: 0.1, maxOutputTokens: 8192 }
@@ -119,30 +161,22 @@
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let fullText = "";
-            let isFirstChunk = true;
+            let isFirst = true;
 
             while (true) {
                 const { done, value } = await reader.read();
-                const chunk = decoder.decode(value || new Uint8Array(), { stream: !done });
-                
-                // 안정적인 텍스트 추출 로직 (정규식 보완)
+                if (done) break;
+                const chunk = decoder.decode(value);
                 const matches = chunk.matchAll(/"text":\s*"((?:[^"\\]|\\.)*)"/g);
                 for (const match of matches) {
-                    if(isFirstChunk) { content.innerText = ""; isFirstChunk = false; }
-                    let txt = match[1].replace(/\\n/g, "\n").replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+                    if(isFirst) { content.innerText = ""; isFirst = false; }
+                    let txt = match[1].replace(/\\n/g, "\n").replace(/\\"/g, '"');
                     fullText += txt;
                     content.innerHTML = fullText.replace(/\n/g, "<br>");
-                    content.scrollTop = content.scrollHeight;
-                }
-                
-                if (done) {
-                    // 마지막 강제 렌더링 확인
-                    if(!fullText) throw new Error("데이터 수신 오류가 발생했습니다.");
-                    break;
                 }
             }
-            log("✅ 분석 완료.");
-        } catch(e) { log("❌ 오류: " + e.message); content.innerText = "오류 발생: " + e.message; }
+            log("✅ 분석 리포트 생성 완료.");
+        } catch(e) { log("❌ 오류: " + e.message); }
         finally { btn.disabled = false; }
     }
 </script>
