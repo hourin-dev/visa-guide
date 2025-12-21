@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.3.6</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.3.7</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -36,15 +36,15 @@
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.3.6 Ranking</span>
+        <span class="ver-badge">v1.3.7 Final</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>🇰🇷 비자 추천 & 체류 행정 전문가 분석</h1>
         <div class="officer-info">담당자: <strong>이규희 사무장 (010-9798-1100)</strong></div>
     </div>
     <div class="content">
         <div class="form-group">
-            <label>🔐 보안 인증 (Google AI API Key)</label>
-            <input type="password" id="apiKey" placeholder="보안 키를 입력하세요" onchange="saveKey()">
+            <label>🔐 보안 인증 (API Key)</label>
+            <input type="password" id="apiKey" placeholder="API 보안 키를 입력하세요" onchange="saveKey()">
             <div style="font-size: 0.8rem; color: #7f8c8d; margin-top: 5px;">
                 <input type="checkbox" id="chkSaveKey" checked> <label for="chkSaveKey" style="cursor:pointer;">인증 정보 안전하게 저장</label>
             </div>
@@ -59,7 +59,7 @@
             <button onclick="uploadFile()" style="padding:10px 20px; margin-top:10px; cursor:pointer; background:var(--secondary); color:white; border:none; border-radius:5px;">데이터 서버 전송</button>
         </div>
 
-        <div class="section-title">📝 의뢰인 상세 데이터 진단</div>
+        <div class="section-title">📝 의뢰인 데이터 상세 진단</div>
         <div class="row">
             <div class="col form-group"><label>현재 자격</label><input type="text" id="visaType" value="E-9"></div>
             <div class="col form-group"><label>연령 정보</label><input type="text" id="age" value="1995년생 (만 29세)"></div>
@@ -67,7 +67,7 @@
         <div class="row">
             <div class="col form-group"><label>전년 소득(만원)</label><input type="number" id="income" value="4000"></div>
             <div class="col form-group">
-                <label>한국어 능력 수준 (상세)</label>
+                <label>한국어 능력 수준 (상세 목록)</label>
                 <select id="koreanSkill">
                     <option value="미보유 / 한국어 구사 불가">미보유 / 한국어 구사 불가</option>
                     <optgroup label="TOPIK (한국어능력시험)">
@@ -75,24 +75,33 @@
                         <option value="TOPIK 5급" selected>TOPIK 5급</option>
                         <option value="TOPIK 4급">TOPIK 4급</option>
                         <option value="TOPIK 3급">TOPIK 3급</option>
-                        <option value="TOPIK 2급 이하">TOPIK 2급 이하</option>
+                        <option value="TOPIK 2급">TOPIK 2급</option>
+                        <option value="TOPIK 1급">TOPIK 1급</option>
                     </optgroup>
-                    <optgroup label="KIIP (사회통합프로그램)">
-                        <option value="KIIP 5단계 이수 완료">5단계 이수 완료</option>
+                    <optgroup label="KIIP (사회통합프로그램 단계)">
+                        <option value="KIIP 5단계 이수 완료">5단계 이수 완료(영주/귀화)</option>
                         <option value="KIIP 4단계 합격">4단계 합격(중급2)</option>
+                        <option value="KIIP 3단계 합격">3단계 합격(중급1)</option>
+                        <option value="KIIP 2단계 합격">2단계 합격(초급2)</option>
+                        <option value="KIIP 1단계 합격">1단계 합격(초급1)</option>
+                        <option value="KIIP 0단계(기초)">0단계(기초)</option>
+                    </optgroup>
+                    <optgroup label="KIIP 사전평가 점수대">
                         <option value="사전평가 85점↑ (5단계 배정)">사전평가 85점↑ (5단계)</option>
-                        <option value="사전평가 61~84점 (4단계 배정)">사전평가 61~84점 (4단계)</option>
+                        <option value="사전평가 61~84점 (3,4단계 배정)">사전평가 61~84점 (3,4단계)</option>
+                        <option value="사전평가 41~60점 (2단계 배정)">사전평가 41~60점 (2단계)</option>
+                        <option value="사전평가 21~40점 (1단계 배정)">사전평가 21~40점 (1단계)</option>
                     </optgroup>
                 </select>
             </div>
         </div>
-        <div class="form-group"><label>기타 특이사항</label><textarea id="details" rows="2">국내 전문학사 학위 보유, 인구감소지역 근무 중.</textarea></div>
+        <div class="form-group"><label>기타 특이사항 (학력, 근무지역, 자격증 등)</label><textarea id="details" rows="2">국내 전문학사 학위 보유.</textarea></div>
         
-        <button class="btn-primary" id="run-btn" onclick="runAnalysis()">⚖️ 이규희 사무장 랭킹 분석 실행</button>
+        <button class="btn-primary" id="run-btn" onclick="runAnalysis()">⚖️ 이규희 사무장 정밀 분석 실행</button>
         
         <div id="status-log"></div>
         <div id="result-box">
-            <div style="padding:20px; font-weight:800; border-bottom:1px solid #eee; background:#f8f9fa;">📄 비자 수임 및 성공 확률 랭킹 리포트</div>
+            <div style="padding:15px; background:#f8f9fa; font-weight:800; border-bottom:1px solid #eee;">📄 비자 성공 확률 랭킹 리포트</div>
             <div id="result-content"></div>
         </div>
     </div>
@@ -101,12 +110,12 @@
 <script>
     let uploadedFileUri = null;
     window.onload = function() {
-        const k = localStorage.getItem("visa_key_v136");
+        const k = localStorage.getItem("visa_key_v137");
         if(k) document.getElementById('apiKey').value = k;
     }
     function saveKey() {
         if(document.getElementById('chkSaveKey').checked) {
-            localStorage.setItem("visa_key_v136", document.getElementById('apiKey').value.trim());
+            localStorage.setItem("visa_key_v137", document.getElementById('apiKey').value.trim());
         }
     }
     function log(msg) { 
@@ -114,24 +123,45 @@
         b.innerText += `> ${msg}\n`; b.scrollTop = b.scrollHeight; 
     }
 
+    // 업로드 로직 완전 재구축 (Missing X- 오류 해결)
     async function uploadFile() {
         const key = document.getElementById('apiKey').value.trim();
         const file = document.getElementById('pdfFile').files[0];
         const label = document.getElementById('file-label');
         if(!key || !file) return alert("API 키와 파일을 확인하세요.");
+        
         label.innerText = "서버 전송 중...";
+        log("⏳ PDF 데이터 서버 동기화 시작...");
         try {
             const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`, {
-                method: 'POST', headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
+                method: 'POST',
+                headers: { 
+                    'X-Goog-Upload-Protocol': 'resumable', 
+                    'X-Goog-Upload-Command': 'start', 
+                    'Content-Type': 'application/json' 
+                },
                 body: JSON.stringify({ file: { display_name: file.name } })
             });
-            const url = startRes.headers.get('x-goog-upload-url');
-            const res = await fetch(url, { method: 'POST', headers: { 'X-Goog-Upload-Command': 'upload, finalize' }, body: file });
-            const data = await res.json();
-            uploadedFileUri = data.file.uri;
-            label.innerText = "동기화 완료"; label.className = "status-badge status-active";
-            log("✅ 파일 동기화 성공.");
-        } catch(e) { log("❌ 업로드 오류: " + e.message); }
+
+            const uploadUrl = startRes.headers.get('x-goog-upload-url');
+            if (!uploadUrl) throw new Error("업로드 세션 생성 실패");
+
+            const uploadRes = await fetch(uploadUrl, {
+                method: 'POST',
+                headers: { 
+                    'X-Goog-Upload-Command': 'upload, finalize',
+                    'X-Goog-Upload-Offset': '0'
+                },
+                body: file
+            });
+
+            const data = await uploadRes.json();
+            if (data.file && data.file.uri) {
+                uploadedFileUri = data.file.uri;
+                label.innerText = "동기화 완료"; label.className = "status-badge status-active";
+                log("✅ 파일 동기화 성공.");
+            }
+        } catch(e) { log("❌ 오류: " + e.message); label.innerText = "전송 실패"; }
     }
 
     async function runAnalysis() {
@@ -140,12 +170,13 @@
         const btn = document.getElementById('run-btn');
         const resultContent = document.getElementById('result-content');
         btn.disabled = true;
-        btn.innerHTML = "<span class='loading-dots'>지침 대조 및 랭킹 산출 중</span>";
+        btn.innerHTML = "<span class='loading-dots'>지침 대조 및 랭킹 분석 중</span>";
         document.getElementById('result-box').style.display = 'block';
-        resultContent.innerHTML = "<div style='text-align:center; padding:50px;'>사무장님, 의뢰인의 조건에 맞는 비자별 성공 확률을 순위별로 계산하고 있습니다.<br>잠시만 기다려 주세요 (약 20~30초).</div>";
-        log("🚀 랭킹 분석 시스템 가동...");
+        resultContent.innerHTML = "<div style='text-align:center; padding:50px;'>사무장님, 의뢰인의 조건에 가장 유리한 비자를 분석하고 있습니다.</div>";
+        log("🚀 정밀 분석 시퀀스 작동 중...");
 
         try {
+            // 자가 치유형 모델 탐색 적용
             const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
             const listData = await listRes.json();
             const targetModel = listData.models.find(m => m.name.includes("1.5-pro")) || listData.models.find(m => m.name.includes("1.5-flash"));
@@ -155,35 +186,20 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{ parts: [
-                        { text: `당신은 법무법인 대림의 이규희 사무장(010-9798-1100)입니다.
-                                리포트 최상단에 '담당자: 이규희 사무장 (010-9798-1100)'을 출력하십시오.
-                                
-                                [분석 지시]
-                                1. 첨부된 매뉴얼을 근거로 E-7-4, F-2-R, F-2-7, F-4-R 비자의 성공 확률을 정밀 계산하십시오.
-                                2. 결과는 반드시 '비자 성공 확률 랭킹(🥇, 🥈, 🥉)' 형식으로 시작하십시오.
-                                3. 각 비자별로 장점, 예상 체류 기간, 2024 GNI(4,405만원) 기준 점수 도출 근거를 상세히 설명하십시오.
-                                4. 답변이 잘리지 않도록 핵심 위주로 끝까지 상세히 작성하십시오.
-                                
-                                의뢰인: 소득 ${document.getElementById('income').value}만원, 한국어 ${document.getElementById('koreanSkill').value}, 기타 ${document.getElementById('details').value}.` 
-                        },
+                        { text: `당신은 법무법인 대림의 이규희 사무장(010-9798-1100)입니다. 리포트 상단에 담당자 정보를 출력하고, 의뢰인(소득 ${document.getElementById('income').value}만원, 한국어 ${document.getElementById('koreanSkill').value})의 비자 성공 확률을 1, 2, 3순위 랭킹(🥇, 🥈, 🥉)으로 상세 분석하십시오.` },
                         { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                     ] }],
-                    generationConfig: { temperature: 0.1, maxOutputTokens: 8192 } // 출력 용량 최대화
+                    generationConfig: { temperature: 0.1, maxOutputTokens: 8192 }
                 })
             });
 
             const data = await response.json();
             if (data.candidates) {
                 resultContent.innerHTML = data.candidates[0].content.parts[0].text.replace(/\n/g, "<br>");
-                log("✅ 랭킹 리포트 생성 완료.");
+                log("✅ 분석 완료.");
             } else { throw new Error(data.error?.message || "응답 실패"); }
-        } catch(e) { 
-            log("❌ 실패: " + e.message); 
-            resultContent.innerHTML = `<div style="color:var(--accent); padding:30px;">[오류 발생] 다시 실행해 주세요.</div>`;
-        } finally { 
-            btn.disabled = false; 
-            btn.innerText = "⚖️ 이규희 사무장 랭킹 분석 실행"; 
-        }
+        } catch(e) { log("❌ 실패: " + e.message); }
+        finally { btn.disabled = false; btn.innerText = "⚖️ 이규희 사무장 정밀 분석 실행"; }
     }
 </script>
 </body>
