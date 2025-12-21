@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.2.4</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.2.5</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -16,8 +16,8 @@
         .header h1 { margin: 0; font-size: 1.8rem; font-weight: 800; }
         .officer-info { margin-top: 15px; font-size: 0.95rem; color: #ecf0f1; background: rgba(255,255,255,0.1); display: inline-block; padding: 12px 25px; border-radius: 8px; }
         .content { padding: 40px; }
-        .section-title { font-size: 1.1rem; font-weight: 700; color: var(--primary); border-left: 5px solid var(--primary); padding-left: 12px; margin: 25px 0 15px; display: flex; justify-content: space-between; }
-        .status-badge { font-size: 0.75rem; padding: 5px 12px; border-radius: 50px; color: white; font-weight: 500; }
+        .section-title { font-size: 1.1rem; font-weight: 700; color: var(--primary); border-left: 5px solid var(--primary); padding-left: 12px; margin: 25px 0 15px; display: flex; justify-content: space-between; align-items: center; }
+        .status-badge { font-size: 0.75rem; padding: 5px 12px; border-radius: 50px; color: white; font-weight: 500; transition: 0.3s; }
         .status-wait { background: #7f8c8d; }
         .status-active { background: var(--success); }
         .form-group { margin-bottom: 20px; }
@@ -25,23 +25,21 @@
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
         .row { display: flex; gap: 15px; margin-bottom: 5px; }
         .col { flex: 1; }
-        .btn-primary { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.3s; }
-        .btn-primary:hover { background: #2c3e50; }
+        .btn-primary { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
         .btn-primary:disabled { background: #95a5a6; cursor: not-allowed; }
         
-        /* 프로그레스 바 스타일 */
         .progress-container { width: 100%; height: 8px; background: #eee; border-radius: 10px; margin: 10px 0; display: none; overflow: hidden; }
-        .progress-bar { width: 0%; height: 100%; background: var(--success); transition: width 0.3s; }
+        .progress-bar { width: 0%; height: 100%; background: var(--success); transition: width 0.2s; }
 
         #status-log { margin-top: 20px; padding: 15px; background: #1e1e1e; color: #00ff00; font-family: monospace; font-size: 0.8rem; border-radius: 8px; display: none; max-height: 100px; overflow-y: auto; }
         #result-box { margin-top: 30px; display: none; border: 1px solid #ddd; border-radius: 12px; background: #fff; border-top: 4px solid var(--primary); }
-        #result-content { padding: 30px; line-height: 1.8; white-space: pre-wrap; font-size: 1rem; color: #34495e; max-height: 700px; overflow-y: auto; }
+        #result-content { padding: 30px; line-height: 1.9; white-space: pre-wrap; font-size: 1.05rem; color: #34495e; max-height: 800px; overflow-y: auto; scroll-behavior: smooth; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.2.4 Reliable</span>
+        <span class="ver-badge">v1.2.5 Final</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>🇰🇷 비자 추천 & 체류 행정 정밀 분석</h1>
         <div class="officer-info">담당자: <strong>이규희 사무장 (010-9778-1100)</strong></div>
@@ -57,14 +55,14 @@
 
         <div class="section-title">
             <span>📂 법무부 지침 데이터 동기화</span>
-            <span id="file-label" class="status-badge status-wait">파일 대기 중</span>
+            <span id="file-label" class="status-badge status-wait">참조 파일 없음</span>
         </div>
         <div style="text-align:center; padding: 20px; border: 2px dashed #ddd; border-radius: 10px; margin-bottom: 20px;">
             <input type="file" id="pdfFile" accept="application/pdf">
-            <button onclick="uploadFile()" style="padding:10px 20px; margin-top:10px; cursor:pointer; background:var(--secondary); color:white; border:none; border-radius:5px;">데이터 서버 전송</button>
+            <button onclick="uploadFile()" style="padding:8px 15px; margin-top:10px; cursor:pointer;">데이터 서버 전송</button>
         </div>
 
-        <div class="section-title">📝 의뢰인 상세 데이터 진단</div>
+        <div class="section-title">📝 의뢰인 상세 데이터</div>
         <div class="row">
             <div class="col form-group"><label>현재 자격</label><input type="text" id="visaType" value="E-9"></div>
             <div class="col form-group"><label>연령 정보</label><input type="text" id="age" value="1995년생"></div>
@@ -72,21 +70,21 @@
         <div class="row">
             <div class="col form-group"><label>전년 소득(만원)</label><input type="number" id="income" value="4000"></div>
             <div class="col form-group">
-                <label>한국어 능력 수준 (상세)</label>
+                <label>한국어 능력 수준 (상세 목록)</label>
                 <select id="koreanSkill">
                     <optgroup label="TOPIK (한국어능력시험)">
                         <option value="TOPIK 5급~6급" selected>TOPIK 5급 이상</option>
                         <option value="TOPIK 4급">TOPIK 4급</option>
                         <option value="TOPIK 3급">TOPIK 3급</option>
-                        <option value="TOPIK 2급 이하">TOPIK 2급 이하 / 없음</option>
+                        <option value="TOPIK 1~2급 / 미보유">TOPIK 2급 이하 / 없음</option>
                     </optgroup>
                     <optgroup label="KIIP (사회통합프로그램)">
                         <option value="KIIP 5단계 이수">5단계 이수 완료 (영주/귀화)</option>
                         <option value="KIIP 4단계 합격">4단계 이수 완료 (중급2)</option>
                         <option value="KIIP 3단계 합격">3단계 이수 완료 (중급1)</option>
-                        <option value="사전평가 85점↑">사전평가 85점↑ (5단계 배정)</option>
-                        <option value="사전평가 61~84점">사전평가 61~84점 (3,4단계)</option>
-                        <option value="사전평가 41~60점">사전평가 41~60점 (2단계)</option>
+                        <option value="KIIP 사전평가 85점↑">사전평가 85점↑ (5단계 배정)</option>
+                        <option value="KIIP 사전평가 61~84점">사전평가 61~84점 (3,4단계 배정)</option>
+                        <option value="KIIP 사전평가 41~60점">사전평가 41~60점 (2단계 배정)</option>
                     </optgroup>
                 </select>
             </div>
@@ -99,7 +97,7 @@
         <div id="result-box">
             <div style="padding:15px; background:#f8f9fa; font-weight:800; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
                 <span>📄 실시간 분석 리포트</span>
-                <span id="progress-text" style="font-size:0.75rem; color:var(--success);">대기 중</span>
+                <span id="progress-text" style="font-size:0.75rem; color:var(--success);"></span>
             </div>
             <div class="progress-container" id="p-container"><div class="progress-bar" id="p-bar"></div></div>
             <div id="result-content"></div>
@@ -109,15 +107,13 @@
 
 <script>
     let uploadedFileUri = null;
-
     window.onload = function() {
-        const k = localStorage.getItem("visa_key_v124");
+        const k = localStorage.getItem("visa_key_final");
         if(k) document.getElementById('apiKey').value = k;
     }
     function saveKey() {
-        if(document.getElementById('chkSaveKey').checked) localStorage.setItem("visa_key_v124", document.getElementById('apiKey').value);
+        if(document.getElementById('chkSaveKey').checked) localStorage.setItem("visa_key_final", document.getElementById('apiKey').value);
     }
-
     function log(msg) { const b = document.getElementById('status-log'); b.style.display = 'block'; b.innerText += `> ${msg}\n`; b.scrollTop = b.scrollHeight; }
 
     async function uploadFile() {
@@ -125,9 +121,8 @@
         const file = document.getElementById('pdfFile').files[0];
         const label = document.getElementById('file-label');
         if(!key || !file) return alert("키와 파일을 입력하세요.");
-        
         label.innerText = "서버 전송 중...";
-        log("⏳ 데이터 서버 동기화 시작...");
+        log("⏳ 데이터 동기화 시작...");
         try {
             const start = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`, {
                 method: 'POST', headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
@@ -139,12 +134,12 @@
             uploadedFileUri = data.file.uri;
             label.innerText = "동기화 완료"; label.className = "status-badge status-active";
             log("✅ 파일 동기화 성공.");
-        } catch(e) { log("❌ 오류: " + e.message); label.innerText = "전송 실패"; }
+        } catch(e) { log("❌ 오류: " + e.message); }
     }
 
     async function runAnalysis() {
         const key = document.getElementById('apiKey').value;
-        if(!key || !uploadedFileUri) return alert("먼저 파일을 전송해 주세요.");
+        if(!key || !uploadedFileUri) return alert("업로드를 먼저 완료해주세요.");
         const btn = document.getElementById('run-btn');
         const content = document.getElementById('result-content');
         const pContainer = document.getElementById('p-container');
@@ -152,19 +147,19 @@
         const pText = document.getElementById('progress-text');
 
         btn.disabled = true;
-        content.innerHTML = "<div style='color:var(--accent); font-weight:bold;'>분석 엔진이 매뉴얼을 읽고 있습니다...</div>";
+        content.innerHTML = "<div id='waiting-msg' style='color:var(--accent); font-weight:bold;'>분석 엔진이 매뉴얼을 읽고 있습니다... 잠시만 기다려주세요.</div>";
         document.getElementById('result-box').style.display = 'block';
         pContainer.style.display = 'block';
-        pBar.style.width = '15%';
-        pText.innerText = "AI 연결 중...";
-        log("🚀 AI 정밀 분석 엔진 가동...");
+        pBar.style.width = '10%';
+        pText.innerText = "엔진 가동 중...";
+        log("🚀 AI 정밀 분석 시작...");
 
         try {
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:streamGenerateContent?key=${key}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{ parts: [
-                        { text: "당신은 법무법인 대림의 이규희 사무장(010-9778-1100)입니다. 리포트 시작 시 '담당자: 이규희 사무장 (010-9778-1100)'을 반드시 출력하고, 의뢰인 비자 성공 확률을 2024 GNI(4,405만원) 기준으로 분석하십시오." },
+                        { text: "당신은 법무법인 대림의 이규희 사무장(010-9778-1100)입니다. 리포트 최상단에 '담당자: 이규희 사무장 (010-9778-1100)'을 반드시 출력하고, 의뢰인의 비자(E-7-4, E-7-4-R, F-2-R, F-4-R, F-2-7) 성공 확률을 매뉴얼 기반으로 정밀 분석하십시오." },
                         { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                     ] }],
                     generationConfig: { temperature: 0.1, maxOutputTokens: 8192 }
@@ -174,33 +169,36 @@
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let fullText = "";
-            let hasStarted = false;
-            let progress = 15;
+            let progress = 10;
 
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
                 
-                const chunk = decoder.decode(value, { stream: true });
-                // 정규식 대신 JSON 조각 파싱 시도 (더욱 안정적임)
-                const parts = chunk.split('{"text": "');
-                for (let i = 1; i < parts.length; i++) {
-                    let txtPart = parts[i].split('"}')[0];
-                    txtPart = txtPart.replace(/\\n/g, "\n").replace(/\\"/g, '"').replace(/\\\\/g, "\\");
-                    
-                    if(!hasStarted && txtPart.trim().length > 0) { content.innerText = ""; hasStarted = true; }
-                    fullText += txtPart;
+                const chunk = decoder.decode(value);
+                // 가장 확실한 텍스트 추출 방식 (버퍼 무시하고 직접 매칭)
+                const textMatches = chunk.match(/"text":\s*"((?:[^"\\]|\\.)*)"/g);
+                if (textMatches) {
+                    // 첫 데이터 수신 시 안내 메시지 즉시 제거
+                    const waitingMsg = document.getElementById('waiting-msg');
+                    if(waitingMsg) content.innerHTML = "";
+
+                    textMatches.forEach(match => {
+                        let txt = match.match(/"text":\s*"(.*)"/)[1];
+                        txt = txt.replace(/\\n/g, "\n").replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+                        fullText += txt;
+                    });
                     content.innerHTML = fullText.replace(/\n/g, "<br>");
                     content.scrollTop = content.scrollHeight;
                     
-                    if(progress < 98) progress += 1;
+                    if(progress < 95) progress += 3;
                     pBar.style.width = progress + '%';
-                    pText.innerText = "분석 리포트 생성 중... " + progress + "%";
+                    pText.innerText = "리포트 작성 중... " + progress + "%";
                 }
             }
             pBar.style.width = '100%';
             pText.innerText = "분석 완료 (100%)";
-            log("✅ 분석 리포트 화면 출력 완료.");
+            log("✅ 분석 리포트 생성 완료.");
         } catch(e) { log("❌ 오류: " + e.message); content.innerText = "오류 발생: " + e.message; }
         finally { btn.disabled = false; }
     }
