@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.3.2</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.3.3</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -38,7 +38,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.3.2 Final Stable</span>
+        <span class="ver-badge">v1.3.3 Ultimate</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>🇰🇷 비자 추천 & 체류 행정 전문가 분석</h1>
         <div class="officer-info">담당자: <strong>이규희 사무장 (010-9798-1100)</strong></div>
@@ -71,28 +71,41 @@
             <div class="col form-group">
                 <label>한국어 능력 수준 (상세 목록)</label>
                 <select id="koreanSkill">
+                    <option value="미보유 / 한국어 구사 불가">미보유 / 한국어 구사 불가</option>
                     <optgroup label="TOPIK (한국어능력시험)">
-                        <option value="TOPIK 5급~6급" selected>TOPIK 5급 이상</option>
+                        <option value="TOPIK 6급">TOPIK 6급</option>
+                        <option value="TOPIK 5급" selected>TOPIK 5급</option>
                         <option value="TOPIK 4급">TOPIK 4급</option>
                         <option value="TOPIK 3급">TOPIK 3급</option>
-                        <option value="TOPIK 2급 이하">TOPIK 1~2급 / 미보유</option>
+                        <option value="TOPIK 2급">TOPIK 2급</option>
+                        <option value="TOPIK 1급">TOPIK 1급</option>
                     </optgroup>
-                    <optgroup label="KIIP (사회통합프로그램)">
-                        <option value="KIIP 5단계 이수 완료">5단계 이수 완료 (영주/귀화)</option>
-                        <option value="KIIP 4단계 이수">4단계 합격 (중급2)</option>
-                        <option value="KIIP 3단계 이수">3단계 합격 (중급1)</option>
+                    <optgroup label="KIIP (사회통합프로그램 단계)">
+                        <option value="KIIP 5단계 이수 완료">KIIP 5단계 이수 완료</option>
+                        <option value="KIIP 4단계 합격">KIIP 4단계 합격(중급2)</option>
+                        <option value="KIIP 3단계 합격">KIIP 3단계 합격(중급1)</option>
+                        <option value="KIIP 2단계 합격">KIIP 2단계 합격(초급2)</option>
+                        <option value="KIIP 1단계 합격">KIIP 1단계 합격(초급1)</option>
+                        <option value="KIIP 0단계(기초)">KIIP 0단계(기초)</option>
+                    </optgroup>
+                    <optgroup label="KIIP 사전평가 점수대">
                         <option value="사전평가 85점↑ (5단계)">사전평가 85점↑ (5단계 배정)</option>
+                        <option value="사전평가 81~84점 (4단계)">사전평가 81~84점 (4단계 배정)</option>
+                        <option value="사전평가 61~80점 (3단계)">사전평가 61~80점 (3단계 배정)</option>
+                        <option value="사전평가 41~60점 (2단계)">사전평가 41~60점 (2단계 배정)</option>
+                        <option value="사전평가 21~40점 (1단계)">사전평가 21~40점 (1단계 배정)</option>
+                        <option value="사전평가 0~20점 (0단계)">사전평가 0~20점 (0단계 배정)</option>
                     </optgroup>
                 </select>
             </div>
         </div>
-        <div class="form-group"><label>기타 특이사항 (학력, 근무지역, 지자체 추천 등)</label><textarea id="details" rows="2">국내 전문학사 학위 보유, 인구감소지역 근무 중.</textarea></div>
+        <div class="form-group"><label>기타 특이사항 (학력, 근무지역, 지자체 추천 등)</label><textarea id="details" rows="2">국내 전문학사 학위 보유.</textarea></div>
         
         <button class="btn-primary" id="run-btn" onclick="runAnalysis()">⚖️ 이규희 사무장 정밀 분석 실행</button>
         
         <div id="status-log"></div>
         <div id="result-box">
-            <div id="result-header" style="padding:20px;">📄 비자 분석 리포트 (Stable v1.3.2)</div>
+            <div id="result-header" style="padding:20px; font-weight:800; color:var(--primary); background:#f8f9fa; border-bottom:1px solid #eee;">📄 비자 분석 리포트 (Ultimate v1.3.3)</div>
             <div id="result-content"></div>
         </div>
     </div>
@@ -102,12 +115,12 @@
     let uploadedFileUri = null;
 
     window.onload = function() {
-        const savedKey = localStorage.getItem("daelim_visa_key_v132");
+        const savedKey = localStorage.getItem("daelim_key_v133");
         if(savedKey) { document.getElementById('apiKey').value = savedKey; }
     }
     function saveKey() {
         if(document.getElementById('chkSaveKey').checked) {
-            localStorage.setItem("daelim_visa_key_v132", document.getElementById('apiKey').value.trim());
+            localStorage.setItem("daelim_key_v133", document.getElementById('apiKey').value.trim());
         }
     }
 
@@ -137,36 +150,36 @@
     }
 
     async function runAnalysis() {
-        const apiKey = document.getElementById('apiKey').value.trim();
-        if(!apiKey || !uploadedFileUri) return alert("동기화를 먼저 완료해 주세요.");
+        const key = document.getElementById('apiKey').value.trim();
+        if(!key || !uploadedFileUri) return alert("동기화를 먼저 완료해 주세요.");
         const btn = document.getElementById('run-btn');
         const content = document.getElementById('result-content');
         
         btn.disabled = true;
-        btn.innerHTML = "<span class='loading-dots'>지침 분석 및 결과 생성 중</span>";
+        btn.innerHTML = "<span class='loading-dots'>지침서 분석 및 결과 생성 중</span>";
         document.getElementById('result-box').style.display = 'block';
-        content.innerHTML = "<div style='text-align:center; padding:50px; color:var(--secondary);'>사무장님, AI가 매뉴얼을 기반으로 정밀 분석 중입니다.<br>잠시만 기다려 주세요 (약 20초 소요).</div>";
+        content.innerHTML = "<div style='text-align:center; padding:50px; color:var(--secondary);'>사무장님, AI가 지침서를 기반으로 수임 가능성을 정밀 진단 중입니다.<br>잠시만 기다려 주세요 (약 20~30초 소요).</div>";
         log("🚀 분석 시퀀스 작동 중...");
 
-        const models = ["gemini-1.5-pro", "gemini-1.5-flash"];
+        // 모델 호출 경로 유연화: gemini-1.5-pro, gemini-1.5-flash 순차 시도
+        const models = ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-pro"];
         let success = false;
 
-        for (const modelName of models) {
+        for (const modelId of models) {
             try {
-                log(`⏳ [${modelName}] 모델 연결 시도 중...`);
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
+                log(`⏳ [${modelId}] 모델 연결 시도 중...`);
+                // 경로에서 models/ 를 빼거나 넣는 방식 모두 대응하기 위해 직접 경로 지정
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${key}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [
                             { text: `당신은 법무법인 대림의 이규희 사무장(010-9798-1100)입니다. 
-                                    리포트 최상단에 '담당자: 이규희 사무장 (010-9798-1100)'을 출력하십시오. 
-                                    의뢰인 정보: 소득 ${document.getElementById('income').value}만원, 한국어 ${document.getElementById('koreanSkill').value}.
-                                    2024 GNI(4,405만원) 기준으로 E-7-4, E-7-4-R, F-2-R, F-4-R, F-2-7 성공 확률을 분석하십시오.` 
+                                    리포트 최상단에 '담당자: 이규희 사무장 (010-9798-1100)'을 출력하고, 의뢰인 비자(E-7-4, E-7-4-R, F-2-R, F-4-R, F-2-7) 성공 확률을 2024 GNI(4,405만원) 기준으로 분석하십시오.` 
                             },
                             { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                         ] }],
-                        generationConfig: { temperature: 0.1, maxOutputTokens: 4096 }
+                        generationConfig: { temperature: 0.1, maxOutputTokens: 8192 }
                     })
                 });
 
@@ -174,20 +187,19 @@
                 if (data.candidates && data.candidates[0].content) {
                     const output = data.candidates[0].content.parts[0].text;
                     content.innerHTML = output.replace(/\n/g, "<br>");
-                    log(`✅ [${modelName}] 분석 성공.`);
+                    log(`✅ [${modelId}] 분석 성공.`);
                     success = true;
                     break;
                 } else if (data.error) {
-                    throw new Error(data.error.message);
+                    log(`⚠️ [${modelId}] 에러 메시지: ${data.error.message}`);
                 }
             } catch(e) {
-                log(`⚠️ [${modelName}] 연결 실패: ${e.message}`);
-                continue;
+                log(`⚠️ [${modelId}] 연결 실패.`);
             }
         }
 
         if (!success) {
-            content.innerHTML = `<div style="color:var(--accent); text-align:center; padding:30px;">[모든 모델 연결 실패]<br>API 키 권한을 확인하거나 잠시 후 다시 시도해 주세요.</div>`;
+            content.innerHTML = `<div style="color:var(--accent); text-align:center; padding:30px;">[분석 실패]<br>현재 구글 API 서버 응답이 원활하지 않습니다.<br>1. API 키 권한을 확인해 주세요.<br>2. 잠시 후 다시 '분석 실행'을 눌러주세요.</div>`;
         }
         btn.disabled = false;
         btn.innerText = "⚖️ 이규희 사무장 정밀 분석 실행";
