@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.5.0</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.5.1</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -36,7 +36,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.5.0 Enterprise</span>
+        <span class="ver-badge">v1.5.1 Professional</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>🇰🇷 비자 추천 & 체류 행정 전문가 분석</h1>
         <div class="officer-info">담당자: <strong>이규희 사무장 (010-9798-1100)</strong></div>
@@ -57,37 +57,46 @@
         </div>
 
         <div class="section-title">📝 의뢰인 상세 조건 진단</div>
+        <div class="form-group">
+            <label>👤 의뢰인 성명 (여권 기준)</label>
+            <input type="text" id="clientName" placeholder="예: KIM CHUL SOO">
+        </div>
         <div class="row">
             <div class="col form-group"><label>현재 비자</label><input type="text" id="visaType" value="E-9"></div>
-            <div class="col form-group"><label>연령 정보</label><input type="text" id="age" value="1995년생 (만 29세)"></div>
+            <div class="col form-group"><label>출생연도 (4자리)</label><input type="text" id="birthYear" value="1995년"></div>
         </div>
         <div class="row">
             <div class="col form-group"><label>전년 소득(만원)</label><input type="number" id="income" value="3500"></div>
             <div class="col form-group">
-                <label>한국어 능력 수준 (상세 목록)</label>
+                <label>한국어 능력 수준 (전체 목록)</label>
                 <select id="koreanSkill">
                     <option value="미보유 / 한국어 구사 불가">미보유 / 한국어 구사 불가</option>
                     <optgroup label="TOPIK (한국어능력시험)">
                         <option value="TOPIK 6급">TOPIK 6급</option>
-                        <option value="TOPIK 5급" selected>TOPIK 5급</option>
+                        <option value="TOPIK 5급">TOPIK 5급</option>
                         <option value="TOPIK 4급">TOPIK 4급</option>
                         <option value="TOPIK 3급">TOPIK 3급</option>
                         <option value="TOPIK 2급">TOPIK 2급</option>
                         <option value="TOPIK 1급">TOPIK 1급</option>
                     </optgroup>
                     <optgroup label="KIIP (사회통합프로그램 단계)">
-                        <option value="KIIP 5단계 이수 완료">5단계 이수 완료</option>
-                        <option value="KIIP 4단계 합격">4단계 합격</option>
-                        <option value="KIIP 3단계 이하">3단계 이하</option>
+                        <option value="KIIP 5단계 이수 완료">KIIP 5단계 이수 완료</option>
+                        <option value="KIIP 4단계 합격" selected>KIIP 4단계 합격</option>
+                        <option value="KIIP 3단계 합격">KIIP 3단계 합격</option>
+                        <option value="KIIP 2단계 합격">KIIP 2단계 합격</option>
+                        <option value="KIIP 1단계 합격">KIIP 1단계 합격</option>
+                        <option value="KIIP 0단계(기초)">KIIP 0단계(기초)</option>
                     </optgroup>
-                    <optgroup label="사전평가 점수대">
-                        <option value="사전평가 85점↑ (5단계)">85점↑ (5단계)</option>
-                        <option value="사전평가 61~84점 (4단계)">61~84점 (4단계)</option>
+                    <optgroup label="KIIP 사전평가 점수대">
+                        <option value="사전평가 85점↑ (5단계 배정)">사전평가 85점↑ (5단계)</option>
+                        <option value="사전평가 61~84점 (4단계 배정)">사전평가 61~84점 (4단계)</option>
+                        <option value="사전평가 41~60점 (3단계 배정)">사전평가 41~60점 (3단계)</option>
+                        <option value="사전평가 21~40점 (2단계 배정)">사전평가 21~40점 (2단계)</option>
                     </optgroup>
                 </select>
             </div>
         </div>
-        <div class="form-group"><label>기타 특이사항 (학력, 경력, 지역 등)</label><textarea id="details" rows="2">국내 전문학사 학위 보유, 용접기능사 자격증 보유, 인구감소지역 근무 중.</textarea></div>
+        <div class="form-group"><label>기타 특약사항 (학력, 경력, 지역 등)</label><textarea id="details" rows="2">국내 전문학사 학위 보유, 용접기능사 자격증 보유, 인구감소지역 근무 중.</textarea></div>
         
         <button class="btn-primary" id="run-btn" onclick="runAnalysis()">⚖️ 이규희 사무장 정밀 분석 실행</button>
         
@@ -102,10 +111,10 @@
 <script>
     let uploadedFileUri = null;
     window.onload = function() {
-        const k = localStorage.getItem("daelim_api_key_v150");
+        const k = localStorage.getItem("daelim_api_key_v151");
         if(k) document.getElementById('apiKey').value = k;
     }
-    function saveKey() { localStorage.setItem("daelim_api_key_v150", document.getElementById('apiKey').value.trim()); }
+    function saveKey() { localStorage.setItem("daelim_api_key_v151", document.getElementById('apiKey').value.trim()); }
     function log(msg) { 
         const b = document.getElementById('status-log'); b.style.display = 'block'; 
         b.innerText += `> ${msg}\n`; b.scrollTop = b.scrollHeight; 
@@ -117,7 +126,6 @@
         const label = document.getElementById('file-label');
         if(!key || !file) return alert("API 키와 파일을 확인하세요.");
         label.innerText = "업로드 중...";
-        log("⏳ PDF 데이터 서버 동기화 시작...");
         try {
             const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`, {
                 method: 'POST',
@@ -144,8 +152,7 @@
         btn.disabled = true;
         btn.innerHTML = "<span class='loading-dots'>출입국관리정책 분석 중</span>";
         document.getElementById('result-box').style.display = 'block';
-        resultContent.innerHTML = "<div style='text-align:center; padding:50px;'>사무장님, 정책 매뉴얼을 정밀 대조하여 리포트를 생성 중입니다.</div>";
-
+        
         try {
             const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
             const listData = await listRes.json();
@@ -159,17 +166,22 @@
                         body: JSON.stringify({
                             contents: [{ parts: [
                                 { text: `당신은 법무법인 대림의 이규희 사무장(010-9798-1100)입니다.
-                                        리포트 최상단에 담당자 정보를 출력하십시오.
                                         
-                                        [분석 대상]: E-7-4, F-2-R, F-2-99, E-7-1, E-7-R, F-2-7 6종 비자 정밀 분석.
-                                        [의뢰인 조건]: 소득 ${document.getElementById('income').value}만원, 한국어 ${document.getElementById('koreanSkill').value}, 특이사항 ${document.getElementById('details').value}.
-                                        
-                                        [리포트 지시]:
-                                        1. 승인 확률이 50%를 넘는 비자를 🥇, 🥈, 🥉 순위별로 나열하십시오.
-                                        2. 각 비자별로 매뉴얼 기반 [예상 부여 체류 기간]을 반드시 명시하십시오.
-                                        3. 각 비자별 [변경 신청 필수 서류]와 [취득 시 주요 장점]을 상세히 작성하십시오.
-                                        4. 2024 GNI(4,405만원) 기준을 엄격히 적용하십시오.
-                                        5. 답변이 길어지더라도 잘리지 않도록 핵심 내용을 구조화하여 리포트를 완성하십시오.` 
+                                        [의뢰인 기본정보]:
+                                        - 성명: ${document.getElementById('clientName').value}
+                                        - 현재 비자: ${document.getElementById('visaType').value}
+                                        - 출생연도: ${document.getElementById('birthYear').value}
+                                        - 전년 소득: ${document.getElementById('income').value}만원
+                                        - 한국어 능력: ${document.getElementById('koreanSkill').value}
+                                        - 기타 조건: ${document.getElementById('details').value}
+
+                                        [리포트 작성 지시]:
+                                        1. 리포트 상단에 의뢰인 성명(${document.getElementById('clientName').value})을 반드시 명시하십시오.
+                                        2. 분석 대상: E-7-4, F-2-R, F-2-99, E-7-1, E-7-R, F-2-7 6종 비자. (상담과 무관한 비자 제외)
+                                        3. 승인 확률 50% 초과 비자를 🥇, 🥈, 🥉 순으로 분석하십시오.
+                                        4. 비자별 [장점], [예상 체류 기간], [필수 제출 서류]를 포함하십시오.
+                                        5. 2024 GNI(4,405만원) 기준을 적용하십시오.
+                                        6. 출력 내용이 잘리지 않도록 핵심 위주로 끝까지 작성하십시오.` 
                                 },
                                 { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                             ] }],
