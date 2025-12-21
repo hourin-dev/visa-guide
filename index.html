@@ -28,10 +28,15 @@
         .btn-primary { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.3s; }
         #status-log { margin-top: 20px; padding: 15px; background: #1e1e1e; color: #00ff00; font-family: monospace; font-size: 0.8rem; border-radius: 8px; display: none; max-height: 150px; overflow-y: auto; white-space: pre-wrap; }
         #result-box { margin-top: 30px; display: none; border: 1px solid #ddd; border-radius: 12px; background: #fff; border-top: 4px solid var(--primary); }
-        #result-content { padding: 35px; line-height: 2.0; font-size: 1.05rem; color: #2c3e50; max-height: 2000px; overflow-y: auto; }
-        .loading-dots:after { content: ' .'; animation: dots 1s steps(5, end) infinite; }
-        @keyframes dots { 0%, 20% { content: ' .'; } 40% { content: ' ..'; } 60% { content: ' ...'; } 80%, 100% { content: ''; } }
-        @media print { .btn-primary, .form-group, .section-title, .header .ver-badge, #status-log, input, select, textarea, #file-label { display: none !important; } .container { box-shadow: none; border: none; } #result-box { border: none; margin-top: 0; } }
+        #result-content { padding: 35px; line-height: 2.2; font-size: 1.05rem; color: #2c3e50; max-height: none; }
+        
+        @media print { 
+            .btn-primary, .form-group, .section-title, .header .ver-badge, #status-log, input, select, textarea, #file-label, #saveKeyLabel { display: none !important; } 
+            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; } 
+            body { padding: 0; background: white; }
+            #result-box { border: none; margin-top: 0; display: block !important; }
+            #result-content { padding: 10px; }
+        }
     </style>
 </head>
 <body>
@@ -44,14 +49,17 @@
     </div>
     <div class="content">
         <div class="form-group">
-            <label>🔐 보안 인증 (Google API Key)</label>
-            <input type="password" id="apiKey" placeholder="API 키를 입력하세요" onchange="saveKey()">
+            <label>🔐 보안 인증 (Google AI API Key)</label>
+            <input type="password" id="apiKey" placeholder="보안 키를 입력하세요" onchange="saveKey()">
+            <div id="saveKeyLabel" style="font-size: 0.8rem; color: #7f8c8d; margin-top: 5px; display: flex; align-items: center; gap: 5px;">
+                <input type="checkbox" id="chkSaveKey" checked> <label for="chkSaveKey" style="cursor:pointer; font-weight:normal;">인증 정보 안전하게 저장</label>
+            </div>
         </div>
 
         <div class="section-title"><span>📂 출입국 정책 데이터 동기화</span><span id="file-label" class="status-badge status-wait">지침서 미등록</span></div>
         <div class="form-group" style="text-align:center;">
             <input type="file" id="pdfFile" accept="application/pdf">
-            <button onclick="uploadFile()" style="padding:10px 20px; margin-top:10px; cursor:pointer; background:var(--secondary); color:white; border:none; border-radius:6px; font-weight:600;">매뉴얼 업로드</button>
+            <button onclick="uploadFile()" style="padding:10px 20px; margin-top:10px; cursor:pointer; background:var(--secondary); color:white; border:none; border-radius:6px; font-weight:600;">매뉴얼 서버 업로드</button>
         </div>
 
         <div class="section-title">📝 의뢰인 상세 정보</div>
@@ -105,7 +113,7 @@
         <div id="result-box">
             <div style="padding:15px; background:#f8f9fa; font-weight:800; border-bottom:1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
                 <span>📄 비자 성공 확률 리포트</span>
-                <button onclick="window.print()" style="padding: 5px 15px; cursor:pointer; background:var(--primary); color:white; border:none; border-radius:4px;">🖨️ 인쇄하기 (Print)</button>
+                <button onclick="window.print()" style="padding: 5px 15px; cursor:pointer; background:var(--primary); color:white; border:none; border-radius:4px;">🖨️ 리포트 인쇄 (Print)</button>
             </div>
             <div id="result-content"></div>
         </div>
@@ -115,10 +123,21 @@
 <script>
     let uploadedFileUri = null;
     window.onload = function() {
-        const k = localStorage.getItem("daelim_api_key_v100");
-        if(k) document.getElementById('apiKey').value = k;
+        const k = localStorage.getItem("daelim_visa_key_v100");
+        if(k) {
+            document.getElementById('apiKey').value = k;
+            document.getElementById('chkSaveKey').checked = true;
+        }
     }
-    function saveKey() { localStorage.setItem("daelim_api_key_v100", document.getElementById('apiKey').value.trim()); }
+    function saveKey() {
+        const key = document.getElementById('apiKey').value.trim();
+        if(document.getElementById('chkSaveKey').checked) {
+            localStorage.setItem("daelim_visa_key_v100", key);
+        } else {
+            localStorage.removeItem("daelim_visa_key_v100");
+        }
+    }
+
     function log(msg) { 
         const b = document.getElementById('status-log'); b.style.display = 'block'; 
         b.innerText += `> ${msg}\n`; b.scrollTop = b.scrollHeight; 
@@ -175,16 +194,16 @@
                                         - 세금체납: ${document.getElementById('taxArrears').value}
                                         - 특이사항: ${document.getElementById('details').value}
                                         
-                                        [리포트 작성 지침]:
+                                        [리포트 작성 엄격 지침]:
                                         1. 최상단에 "의뢰인: ${document.getElementById('clientName').value} 귀하"를 크게 표시하고 리포트 제목은 "비자 성공 확률 리포트"로 하십시오.
-                                        2. 분석 비자: E-7-4, F-2-R, F-2-99, E-7-1, E-7-R, F-2-7 중 승인 확률이 50%를 넘는 것 위주로 🥇, 🥈, 🥉 순위를 매기십시오.
-                                        3. 형사경력이나 세금체납이 "있음"인 경우, 해당 사항이 비자 신청에 미치는 심각한 반려 위험을 강력히 경고하십시오.
-                                        4. 각 비자별 필수 항목:
-                                           - [취득 시 주요 장점]
-                                           - [가족 초청 여부 및 종류]: 가족 초청 가능 여부와 초청 시 부여 비자(F-3, F-1-15 등) 명시
-                                           - [예상 부여 체류 기간]
-                                           - [자격 변경 필수 서류]
-                                        5. 모든 문장에서 별표(*)를 제거하고 깔끔한 번호와 항목 리스트를 사용하십시오.
+                                        2. 분석 비자: E-7-4, F-2-R, F-2-99, E-7-1, E-7-R, F-2-7 중 승인 확률이 50%를 넘는 것 위주로 순위를 매기십시오.
+                                        3. **추천 비자명은 반드시 볼드체(예: **E-7-4**)로 강조**하십시오.
+                                        4. **별표(*) 기호를 문장 앞이나 뒤에 절대 사용하지 마십시오.** 불필요한 기호 대신 공백과 줄바꿈으로 깔끔하게 정리하십시오.
+                                        5. 각 비자별 필수 항목:
+                                           - 취득 시 주요 장점
+                                           - 가족 초청 여부 및 종류: 초청 시 부여되는 비자 코드(예: F-3-1R 등) 명시
+                                           - 예상 부여 체류 기간
+                                           - 자격 변경 필수 제출 서류
                                         6. 2024 GNI(4,405만원) 기준을 적용하십시오.` 
                                 },
                                 { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
@@ -194,7 +213,10 @@
                     });
                     const data = await response.json();
                     if (data.candidates) {
-                        document.getElementById('result-content').innerHTML = data.candidates[0].content.parts[0].text.replace(/\n/g, "<br>");
+                        let resultText = data.candidates[0].content.parts[0].text;
+                        // AI가 혹시나 별표를 썼을 경우를 대비한 2차 제거
+                        resultText = resultText.replace(/\*/g, ''); 
+                        document.getElementById('result-content').innerHTML = resultText.replace(/\n/g, "<br>");
                         log(`✅ 분석 리포트 생성 완료.`);
                         break;
                     }
