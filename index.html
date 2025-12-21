@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.4.0</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.4.1</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -36,7 +36,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.4.0 Integrated</span>
+        <span class="ver-badge">v1.4.1 Final Fix</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>🇰🇷 비자 추천 & 체류 행정 전문가 분석</h1>
         <div class="officer-info">담당자: <strong>이규희 사무장 (010-9798-1100)</strong></div>
@@ -84,7 +84,6 @@
                         <option value="KIIP 3단계 합격">3단계 합격(중급1)</option>
                         <option value="KIIP 2단계 합격">2단계 합격(초급2)</option>
                         <option value="KIIP 1단계 합격">1단계 합격(초급1)</option>
-                        <option value="KIIP 0단계(기초)">0단계(기초)</option>
                     </optgroup>
                     <optgroup label="KIIP 사전평가 점수대">
                         <option value="사전평가 85점↑ (5단계 배정)">사전평가 85점↑ (5단계)</option>
@@ -94,13 +93,13 @@
                 </select>
             </div>
         </div>
-        <div class="form-group"><label>기타 특이사항</label><textarea id="details" rows="2">국내 전문학사 학위 보유.</textarea></div>
+        <div class="form-group"><label>기타 특이사항 (학력, 근무지, 자격증 등)</label><textarea id="details" rows="2">국내 전문학사 학위 보유, 인구감소지역 근무 중.</textarea></div>
         
         <button class="btn-primary" id="run-btn" onclick="runAnalysis()">⚖️ 이규희 사무장 정밀 분석 실행</button>
         
         <div id="status-log"></div>
         <div id="result-box">
-            <div style="padding:15px; background:#f8f9fa; font-weight:800; border-bottom:1px solid #eee;">📄 비자 성공 확률 랭킹 리포트</div>
+            <div style="padding:15px; background:#f8f9fa; font-weight:800; border-bottom:1px solid #eee;">📄 비자 성공 확률 랭킹 리포트 (Final v1.4.1)</div>
             <div id="result-content"></div>
         </div>
     </div>
@@ -109,12 +108,12 @@
 <script>
     let uploadedFileUri = null;
     window.onload = function() {
-        const k = localStorage.getItem("daelim_key_v140");
+        const k = localStorage.getItem("daelim_visa_key_v141");
         if(k) document.getElementById('apiKey').value = k;
     }
     function saveKey() {
         if(document.getElementById('chkSaveKey').checked) {
-            localStorage.setItem("daelim_key_v140", document.getElementById('apiKey').value.trim());
+            localStorage.setItem("daelim_visa_key_v141", document.getElementById('apiKey').value.trim());
         }
     }
     function log(msg) { 
@@ -122,6 +121,7 @@
         b.innerText += `> ${msg}\n`; b.scrollTop = b.scrollHeight; 
     }
 
+    // 파일 전송 로직 완전 재구축 (Missing X- 오류 해결)
     async function uploadFile() {
         const key = document.getElementById('apiKey').value.trim();
         const file = document.getElementById('pdfFile').files[0];
@@ -129,20 +129,37 @@
         if(!key || !file) return alert("API 키와 파일을 확인하세요.");
         
         label.innerText = "서버 전송 중...";
-        log("⏳ PDF 데이터 동기화 시도 중...");
+        log("⏳ PDF 데이터 서버 동기화 시작...");
         try {
             const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`, {
                 method: 'POST',
-                headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
+                headers: { 
+                    'X-Goog-Upload-Protocol': 'resumable', 
+                    'X-Goog-Upload-Command': 'start', 
+                    'Content-Type': 'application/json' 
+                },
                 body: JSON.stringify({ file: { display_name: file.name } })
             });
-            const url = startRes.headers.get('x-goog-upload-url');
-            const res = await fetch(url, { method: 'POST', headers: { 'X-Goog-Upload-Command': 'upload, finalize' }, body: file });
-            const data = await res.json();
-            uploadedFileUri = data.file.uri;
-            label.innerText = "동기화 완료"; label.className = "status-badge status-active";
-            log("✅ 파일 동기화 성공.");
-        } catch(e) { log("❌ 업로드 오류: " + e.message); }
+
+            const uploadUrl = startRes.headers.get('x-goog-upload-url');
+            if (!uploadUrl) throw new Error("업로드 세션 생성 실패");
+
+            const uploadRes = await fetch(uploadUrl, {
+                method: 'POST',
+                headers: { 
+                    'X-Goog-Upload-Command': 'upload, finalize',
+                    'X-Goog-Upload-Offset': '0'
+                },
+                body: file
+            });
+
+            const data = await uploadRes.json();
+            if (data.file && data.file.uri) {
+                uploadedFileUri = data.file.uri;
+                label.innerText = "동기화 완료"; label.className = "status-badge status-active";
+                log("✅ 파일 동기화 성공.");
+            }
+        } catch(e) { log("❌ 오류: " + e.message); label.innerText = "전송 실패"; }
     }
 
     async function runAnalysis() {
@@ -154,7 +171,7 @@
         btn.disabled = true;
         btn.innerHTML = "<span class='loading-dots'>지침 대조 및 랭킹 분석 중</span>";
         document.getElementById('result-box').style.display = 'block';
-        resultContent.innerHTML = "<div style='text-align:center; padding:50px;'>사무장님, AI 엔진이 매뉴얼을 대조하여 최적의 비자 순위를 도출 중입니다.</div>";
+        resultContent.innerHTML = "<div style='text-align:center; padding:50px;'>사무장님, 의뢰인의 조건에 맞는 비자별 성공 확률을 순위별로 도출 중입니다.</div>";
         log("🚀 정밀 분석 시퀀스 작동 중...");
 
         try {
