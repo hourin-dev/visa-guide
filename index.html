@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.0.3</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.0</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -12,7 +12,6 @@
         body { font-family: 'Pretendard', sans-serif; background: var(--bg); padding: 20px; display: flex; justify-content: center; margin: 0; color: #2c3e50; }
         .container { width: 100%; max-width: 800px; background: var(--white); border-radius: 15px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); overflow: hidden; }
         
-        /* 상단 UI 개편 */
         .header { background: var(--primary); color: white; padding: 40px 30px; text-align: center; border-bottom: 5px solid var(--accent); position: relative; }
         .header h1 { margin: 0; font-size: 1.9rem; letter-spacing: 1px; font-weight: 800; }
         .header .sub-lawfirm { font-size: 0.9rem; opacity: 0.7; margin-bottom: 5px; display: block; }
@@ -38,7 +37,7 @@
         .btn-primary { width: 100%; padding: 20px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.2rem; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 15px; }
         .btn-primary:hover { background: #2c3e50; transform: translateY(-2px); }
         
-        #status-log { margin-top: 20px; padding: 15px; background: #1e1e1e; color: #00ff00; font-family: monospace; font-size: 0.85rem; border-radius: 8px; display: none; max-height: 150px; overflow-y: auto; }
+        #status-log { margin-top: 20px; padding: 15px; background: #1e1e1e; color: #00ff00; font-family: monospace; font-size: 0.85rem; border-radius: 8px; display: none; max-height: 150px; overflow-y: auto; white-space: pre-wrap; }
         #result-box { margin-top: 35px; display: none; border: 1px solid #ddd; border-radius: 12px; overflow: hidden; background: #fff; border-top: 4px solid var(--primary); }
         #result-header { background: #f8f9fa; padding: 20px; border-bottom: 1px solid #eee; font-weight: 800; color: var(--primary); display: flex; justify-content: space-between; align-items: center; }
         #result-content { padding: 35px; line-height: 1.9; white-space: pre-wrap; font-size: 1.05rem; color: #34495e; }
@@ -119,15 +118,15 @@
 
         <div id="result-box">
             <div id="result-header">
-                <span>📄 비자 수임 가능성 진단 리포트 (E-7-4 / F-2-R / F-2-7)</span>
-                <span style="font-size:0.8rem; font-weight:normal;">이규희 사무장 분석 시스템 v1.0.3</span>
+                <span>📄 비자 수임 가능성 진단 리포트 (E-7-4 / E-7-4-R / F-2-R / F-4-R / F-2-7)</span>
+                <span style="font-size:0.8rem; font-weight:normal;">이규희 사무장 분석 시스템 v1.1.0</span>
             </div>
             <div id="result-content"></div>
         </div>
     </div>
     <div class="footer">
         서울특별시 영등포구 | 법무법인 대림 비자전담팀
-        <span class="ver-info">System Version v1.0.3 (Rank & Benefit Analysis Mode)</span>
+        <span class="ver-info">System Version v1.1.0 (Regional Specialization Focus)</span>
     </div>
 </div>
 
@@ -181,7 +180,7 @@
         if(!apiKey || !uploadedFileUri) return alert("인증 키 입력과 지침 파일 업로드가 선행되어야 합니다.");
         checkAndSaveKey();
 
-        document.getElementById('status-log').innerHTML = "--- 분석 엔진 v1.0.3 가동 (Rank & Benefit Focus) ---\n";
+        document.getElementById('status-log').innerHTML = "--- 분석 엔진 v1.1.0 가동 (E-7-4-R / F-4-R 추가 모드) ---\n";
         document.getElementById('result-box').style.display = 'none';
 
         try {
@@ -191,25 +190,26 @@
 
             const prompt = `
             당신은 [법무법인 대림]의 [이규희 사무장]입니다.
-            업로드된 PDF 매뉴얼을 기반으로 의뢰인의 비자 변경 가능성을 E-7-4, F-2-R, F-2-7 중심으로 분석하십시오.
+            업로드된 PDF 매뉴얼을 기반으로 의뢰인의 비자 변경 가능성을 E-7-4, E-7-4-R(지역특화 숙련기능), F-2-R(지역특화 우수인재), F-4-R(지역특화 재외동포), F-2-7 중심으로 정밀 분석하십시오.
 
             [의뢰인 데이터]
-            현재: ${document.getElementById('visaType').value}, 나이: ${document.getElementById('age').value}, 소득: ${document.getElementById('income').value}만원, 한국어: ${document.getElementById('koreanSkill').value}, 특이사항: ${document.getElementById('details').value}
+            현재 체격: ${document.getElementById('visaType').value}, 나이: ${document.getElementById('age').value}, 소득: ${document.getElementById('income').value}만원, 한국어: ${document.getElementById('koreanSkill').value}, 특이사항: ${document.getElementById('details').value}
 
-            [분석 가이드라인]
+            [분석 지침]
             1. 인사말: "안녕하십니까, 법무법인 대림의 이규희 사무장입니다. (연락처: 010-9798-1100)"
             2. 성공 확률 랭킹 (이모티콘 필수):
                🥇 1순위: [비자명] (확률 %), 🥈 2순위: [비자명] (확률 %), 🥉 3순위: [비자명] (확률 %)
-            3. 비자별 상세 분석 (각 비자의 '강력한 장점' 부각):
-               - 특징 및 기한: 해당 비자가 의뢰인의 체류 자격에 주는 혜택과 최대 체류 기한.
-               - 점수/요건 충족도: 2024 GNI 4,405만원 기준 정밀 계산.
-            4. 결격 사유 주의사항: 실무적 반려 위험 요소 경고.
-            5. 사무장 보완 전략: 수임 가능성을 높이기 위한 최적의 로드맵.
+            3. 신규 비자 정밀 분석 (E-7-4-R, F-4-R 포함):
+               - E-7-4-R: 인구감소지역 기업체 취업 및 지자체 추천 요건 확인.
+               - F-4-R: 재외동포 가족 동반 정착 및 지역 내 활동 의무 사항 강조.
+               - 소득 요건: 2024년 GNI(4,405만원) 기준 충족 여부 계산.
+            4. 지역특화형 비자(R계열)의 실거주 및 취업 유지 의무(보통 2년) 경고.
+            5. 사무장 보완 전략: 지자체 추천서 확보 방법 등 수임 성공률을 높이기 위한 로드맵 제공.
             `;
 
             let success = false;
             for(let model of usableModels) {
-                log(`⏳ [${model.name.split('/')[1]}] 고도화된 분석 시퀀스 작동 중...`);
+                log(`⏳ [${model.name.split('/')[1]}] 고도화된 지역특화 분석 시퀀스 작동 중...`);
                 try {
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model.name}:generateContent?key=${apiKey}`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
