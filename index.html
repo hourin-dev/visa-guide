@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.8</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.9</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -29,7 +29,6 @@
         .form-group label { display: block; font-weight: 600; margin-bottom: 10px; font-size: 0.95rem; color: var(--secondary); }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
         
-        /* 화면 깨짐 방지를 위한 가로 배열 복구 */
         .row { display: flex; gap: 20px; margin-bottom: 5px; }
         .col { flex: 1; min-width: 0; }
 
@@ -49,7 +48,7 @@
 
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.1.8 Fix</span>
+        <span class="ver-badge">v1.1.9 Reliable</span>
         <small class="sub-lawfirm">법무법인 대림 (DAELIM)</small>
         <h1>🇰🇷 비자 추천 & 체류 행정 전문가 분석</h1>
         <div class="officer-info">
@@ -91,7 +90,7 @@
                 <input type="number" id="income" value="4000">
             </div>
             <div class="col form-group">
-                <label>한국어 능력 수준 (실무 목록)</label>
+                <label>한국어 능력 수준</label>
                 <select id="koreanSkill">
                     <optgroup label="TOPIK (한국어능력시험)">
                         <option value="TOPIK 5급~6급" selected>TOPIK 5급 이상</option>
@@ -120,16 +119,16 @@
         <div id="status-log">로그 대기 중...</div>
 
         <div id="result-box">
-            <div id="result-header" style="padding:20px;">📄 비자 분석 리포트 (v1.1.8)</div>
+            <div id="result-header" style="padding:20px;">📄 비자 분석 리포트 (v1.1.9)</div>
             <div id="result-content"></div>
         </div>
     </div>
-    <div class="footer">법무법인 대림 비자전담팀 | v1.1.8 Layout Fix</div>
+    <div class="footer">법무법인 대림 비자전담팀 | v1.1.9 Stable Update</div>
 </div>
 
 <script>
     let uploadedFileUri = null;
-    const VERSION = "v1.1.8";
+    const VERSION = "v1.1.9";
 
     window.onload = function() {
         const savedKey = localStorage.getItem("daelim_api_key");
@@ -147,6 +146,7 @@
         box.innerHTML += `> ${msg}\n`; box.scrollTop = box.scrollHeight;
     }
 
+    // 업로드 로직 대폭 강화 (Missing x- header 오류 해결)
     async function uploadFile() {
         const apiKey = document.getElementById('apiKey').value.trim();
         const fileInput = document.getElementById('pdfFile');
@@ -157,18 +157,37 @@
         try {
             const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`, {
                 method: 'POST',
-                headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
+                headers: { 
+                    'X-Goog-Upload-Protocol': 'resumable', 
+                    'X-Goog-Upload-Command': 'start', 
+                    'Content-Type': 'application/json' 
+                },
                 body: JSON.stringify({ file: { display_name: fileInput.files[0].name } })
             });
+
             const uploadUrl = startRes.headers.get('x-goog-upload-url');
+            if (!uploadUrl) throw new Error("업로드 주소를 받지 못했습니다.");
+
             const uploadRes = await fetch(uploadUrl, {
-                method: 'POST', headers: { 'X-Goog-Upload-Command': 'upload, finalize' }, body: fileInput.files[0]
+                method: 'POST',
+                headers: { 
+                    'X-Goog-Upload-Command': 'upload, finalize',
+                    'X-Goog-Upload-Offset': '0'
+                },
+                body: fileInput.files[0]
             });
+
             const data = await uploadRes.json();
-            uploadedFileUri = data.file.uri;
-            label.innerText = "동기화 완료"; label.className = "status-badge status-active";
-            log("✅ 데이터 서버 동기화 성공.");
-        } catch(e) { log("❌ 오류: " + e.message); }
+            if (data.file && data.file.uri) {
+                uploadedFileUri = data.file.uri;
+                label.innerText = "동기화 완료"; label.className = "status-badge status-active";
+                log("✅ PDF 데이터 서버 동기화 성공.");
+            }
+        } catch(e) { 
+            log("❌ 오류: " + e.message); 
+            label.innerText = "연결 실패";
+            label.className = "status-badge status-error";
+        }
     }
 
     async function runAnalysis() {
@@ -179,32 +198,32 @@
         const resultContent = document.getElementById('result-content');
         btn.disabled = true;
         document.getElementById('result-box').style.display = 'block';
-        resultContent.innerHTML = "리포트를 생성 중입니다...";
-        log(`⏳ [${VERSION}] 정밀 분석 엔진 가동...`);
+        resultContent.innerHTML = "리포트를 생성 중입니다... (사무장님 정보 확인 중)";
+        log(`⏳ [${VERSION}] 실시간 분석 시퀀스 작동 중...`);
 
         try {
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:streamGenerateContent?key=${apiKey}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{ parts: [
-                        { text: "당신은 법무법인 대림의 이규희 사무장(010-9778-1100)입니다. 리포트 최상단에 반드시 '담당자: 이규희 사무장 (010-9778-1100)'을 출력하십시오. 의뢰인의 비자(E-7-4, E-7-4-R, F-2-R, F-4-R, F-2-7) 성공 확률을 PDF 매뉴얼과 2024 GNI(4,405만원) 기준으로 분석하십시오." },
+                        { text: "당신은 법무법인 대림의 이규희 사무장(010-9778-1100)입니다. 분석 리포트의 가장 첫 줄에 '담당자: 이규희 사무장 (010-9778-1100)'을 반드시 출력하고, 의뢰인의 비자(E-7-4, E-7-4-R, F-2-R, F-4-R, F-2-7) 성공 확률을 정밀 분석하십시오." },
                         { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                     ] }],
-                    generationConfig: { temperature: 0.2, maxOutputTokens: 8192 }
+                    generationConfig: { temperature: 0.1, maxOutputTokens: 8192 }
                 })
             });
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let fullText = "";
-            let buffer = "";
 
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
-                buffer += decoder.decode(value);
+                const chunk = decoder.decode(value);
                 
-                const matches = buffer.matchAll(/"text":\s*"(.*?)"/g);
+                // 텍스트 패턴 매칭을 통한 안정적인 출력
+                const matches = chunk.matchAll(/"text":\s*"(.*?)"/g);
                 for (const match of matches) {
                     let txt = match[1].replace(/\\n/g, "\n").replace(/\\"/g, '"');
                     fullText += txt;
@@ -212,7 +231,7 @@
                     resultContent.scrollTop = resultContent.scrollHeight;
                 }
             }
-            log("✅ 분석 완료.");
+            log("✅ 분석 리포트 생성 완료.");
         } catch(e) { log("❌ 오류: " + e.message); }
         finally { btn.disabled = false; }
     }
