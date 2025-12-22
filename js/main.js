@@ -1,47 +1,44 @@
+/**
+ * js/main.js - v1.1.7
+ * UI 및 이벤트 제어
+ */
 document.addEventListener('DOMContentLoaded', () => {
-    // 저장된 API 키 불러오기
     const savedKey = localStorage.getItem(CONFIG.STORAGE_KEY);
     if(savedKey) document.getElementById('apiKey').value = savedKey;
 
     document.getElementById('upload-btn').addEventListener('click', async () => {
-        const keyInput = document.getElementById('apiKey');
-        const fileInput = document.getElementById('pdfFile');
-        const pBar = document.getElementById('progress-bar');
-        const pText = document.getElementById('progress-text');
-        const pContainer = document.getElementById('progress-container');
-
-        const key = keyInput.value.trim();
-        const file = fileInput.files[0];
-
-        if(!key || !file) return alert("API 키 입력과 정책 파일 선택은 필수입니다.");
-
-        // 키 저장 여부
-        if(document.getElementById('chkSaveKey').checked) {
-            localStorage.setItem(CONFIG.STORAGE_KEY, key);
+        // 1. 객체 존재 여부 체크 (undefined 방어)
+        if (typeof VisaAPI === 'undefined' || !VisaAPI.uploadPDF) {
+            alert("시스템 엔진(api.js)이 아직 로드되지 않았습니다. 잠시 후 다시 시도하거나 새로고침(F5) 해주세요.");
+            return;
         }
 
-        pContainer.style.display = 'block';
-        pBar.style.width = '0%';
-        pBar.innerText = '0%';
-        pText.innerText = "출입국 정책 동기화 시작 중...";
+        const key = document.getElementById('apiKey').value.trim();
+        const file = document.getElementById('pdfFile').files[0];
+        const pBar = document.getElementById('progress-bar');
+        const pText = document.getElementById('progress-text');
+
+        if(!key || !file) return alert("API 키와 정책 파일을 모두 준비해주세요.");
+
+        document.getElementById('progress-container').style.display = 'block';
+        pText.innerText = "서버 연결 시도 중...";
 
         try {
-            // window.VisaAPI를 통해 명확하게 호출
-            const data = await window.VisaAPI.uploadPDF(key, file, (percent) => {
+            // 2. 안전하게 호출
+            const data = await VisaAPI.uploadPDF(key, file, (percent) => {
                 pBar.style.width = percent + '%';
                 pBar.innerText = percent + '%';
-                pText.innerText = percent < 100 ? `구글 서버로 전송 중...` : `전송 완료! 파일 처리 중...`;
+                pText.innerText = `업로드 중... (${percent}%)`;
             });
             
             document.getElementById('file-label').className = "status-badge status-active";
             document.getElementById('file-label').innerText = "동기화 완료";
-            pText.innerText = "✅ 정책 데이터 동기화 성공!";
-            console.log("File URI:", data.file.uri);
+            pText.innerText = "✅ 성공: 출입국 정책 데이터 동기화됨";
             
         } catch(e) {
             pText.innerText = "❌ 오류: " + e.message;
             pBar.style.background = "#c0392b";
-            console.error("Upload Error:", e);
+            console.error(e);
         }
     });
 });
