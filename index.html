@@ -21,7 +21,7 @@
             <div class="form-group">
                 <label style="display: flex; justify-content: space-between; align-items: center;">
                     🔐 보안 인증 (Google AI API Key)
-                    <span style="font-size: 0.8rem; font-weight: normal;">
+                    <span style="font-size: 0.85rem; font-weight: normal; color: #555;">
                         <input type="checkbox" id="chkSaveKey" checked> 인증 저장
                     </span>
                 </label>
@@ -66,15 +66,28 @@
                     <label>한국어 능력 (최신 전체 목록)</label>
                     <select id="koreanSkill">
                         <option value="미보유">미보유 / 구사 불가</option>
-                        <optgroup label="TOPIK">
+                        <optgroup label="TOPIK (한국어능력시험)">
                             <option value="TOPIK 6급">TOPIK 6급</option>
                             <option value="TOPIK 5급" selected>TOPIK 5급</option>
                             <option value="TOPIK 4급">TOPIK 4급</option>
                             <option value="TOPIK 3급">TOPIK 3급</option>
+                            <option value="TOPIK 2급">TOPIK 2급</option>
+                            <option value="TOPIK 1급">TOPIK 1급</option>
                         </optgroup>
-                        <optgroup label="KIIP (사회통합)">
+                        <optgroup label="KIIP (사회통합프로그램 이수/배정)">
                             <option value="KIIP 5단계 이수 완료">KIIP 5단계 이수 완료</option>
-                            <option value="KIIP 4단계 합격">KIIP 4단계 합격</option>
+                            <option value="KIIP 5단계 배정(4단계 합격)">KIIP 5단계 배정(4단계 합격)</option>
+                            <option value="KIIP 4단계 배정(3단계 합격)">KIIP 4단계 배정(3단계 합격)</option>
+                            <option value="KIIP 3단계 배정(2단계 합격)">KIIP 3단계 배정(2단계 합격)</option>
+                            <option value="KIIP 2단계 배정(1단계 합격)">KIIP 2단계 배정(1단계 합격)</option>
+                            <option value="KIIP 1단계 배정(0단계 합격)">KIIP 1단계 배정(0단계 합격)</option>
+                        </optgroup>
+                        <optgroup label="KIIP 사전평가 점수">
+                            <option value="사전평가 85점 이상">사전평가 85점↑ (5단계 배정)</option>
+                            <option value="사전평가 61-84점">사전평가 61~84점 (4단계 배정)</option>
+                            <option value="사전평가 41-60점">사전평가 41~60점 (3단계 배정)</option>
+                            <option value="사전평가 21-40점">사전평가 21~40점 (2단계 배정)</option>
+                            <option value="사전평가 0-20점">사전평가 0~20점 (1단계 배정)</option>
                         </optgroup>
                     </select>
                 </div>
@@ -88,20 +101,21 @@
                     <label>형사범죄 경력</label>
                     <select id="criminalRecord">
                         <option value="없음" selected>없음 (Clean)</option>
-                        <option value="있음">있음</option>
+                        <option value="있음">있음 (경고)</option>
                     </select>
                 </div>
                 <div class="col form-group">
                     <label>세금 체납 여부</label>
                     <select id="taxArrears">
                         <option value="없음" selected>없음 (완납)</option>
-                        <option value="체납">있음</option>
+                        <option value="체납">있음 (체납중)</option>
                     </select>
                 </div>
             </div>
         </div>
 
         <button class="btn-primary" id="run-btn">⚖️ 이규희 사무장 정밀 분석 실행</button>
+
         <div id="status-log">시스템 로그 준비 완료...</div>
         <div id="result-box"><div id="result-content"></div></div>
     </div>
