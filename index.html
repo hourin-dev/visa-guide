@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.2</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.3</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -50,7 +50,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.1.2</span>
+        <span class="ver-badge">v1.1.3</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>비자 추천 & 체류 행정 전문가 분석</h1>
         <p>승인으로 증명하는 법무법인 대림의 정밀 비자 솔루션</p>
@@ -210,7 +210,7 @@
         const btn = document.getElementById('run-btn');
         btn.disabled = true;
         btn.innerText = "법무부 출입국관리사무소 조회 중...";
-        updateProgress('analysis', 20);
+        updateProgress('analysis', 10);
 
         const dataInput = {
             name: clientName,
@@ -226,12 +226,12 @@
         const resultBox = document.getElementById('result-box');
         const resultContent = document.getElementById('result-content');
         resultBox.style.display = 'block';
-        resultContent.innerHTML = "<div style='text-align:center; padding:20px;'>⏳ 서버가 파일을 읽고 분석하는 중입니다. 잠시만 기다려 주세요 (약 5~10초)...</div>";
+        resultContent.innerHTML = "<div style='text-align:center; padding:20px;'>⏳ 서버 응답 대기 중입니다 (최대 10초)...</div>";
 
         try {
-            // UNKNOWN 에러 방지를 위한 3초 강제 대기 (서버 파일 인덱싱 시간 확보)
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            updateProgress('analysis', 50);
+            // UNKNOWN 에러 및 응답 없음 방지를 위해 대기 시간을 5초로 연장
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            updateProgress('analysis', 40);
 
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -240,12 +240,11 @@
                         { text: `당신은 법무법인 대림의 이규희 사무장입니다. 
                                 [의뢰인 정보] 성명: ${dataInput.name}, 비자: ${dataInput.visa}, 소득: ${dataInput.income}만, 한국어: ${dataInput.korean}, 범죄경력: ${dataInput.criminal}, 체납: ${dataInput.tax}, 특이사항: ${dataInput.details}.
                                 
-                                [분석 지침]
-                                1. 상단에 "의뢰인: ${dataInput.name} 귀하"를 크게 표시.
-                                2. [입력 정보 검토] -> [결격 사유 진단] -> [비자별 성공 확률 및 점수 계산] 순서 준수.
-                                3. 특히 범죄경력(${dataInput.criminal}) 관련 규정을 지침서에서 찾아 엄격하게 분석.
-                                4. 성공 확률을 **성공 확률: [00]%** 형식으로 수치화하여 강조.
-                                5. 텍스트 내 별표(*)는 제거하고 볼드체와 이모티콘만 사용.` 
+                                [분석 가이드라인]
+                                1. 리포트 상단에 "의뢰인: ${dataInput.name} 귀하"를 크게 작성.
+                                2. [입력 요건 검토] -> [결격 사유 진단] -> [비자별 성공 확률 및 점수 계산] 순서 준수.
+                                3. 각 비자별 취득 가능성을 **성공 확률: [00]%** 형식으로 수치화하여 크게 강조.
+                                4. 별표(*) 제거하고 볼드체와 이모티콘(💡, 👨‍👩‍👧‍👦, 📊, ⚠️) 사용.` 
                         },
                         { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                     ] }],
@@ -266,21 +265,20 @@
 
             if (resultText) {
                 let formattedText = resultText.replace(/\*/g, '');
-                // % 확률 강조 스타일 적용
-                formattedText = formattedText.replace(/([0-9]{1,3}%)/g, "<span style='color:var(--accent); font-size:1.3rem; font-weight:800; border-bottom:2px solid var(--accent);'>$1</span>");
+                // 확률 수치 강조 스타일 적용
+                formattedText = formattedText.replace(/([0-9]{1,3}%)/g, "<span style='color:var(--accent); font-size:1.4rem; font-weight:800; border-bottom:2px solid var(--accent);'>$1</span>");
                 resultContent.innerHTML = formattedText.replace(/\n/g, "<br>");
                 updateProgress('analysis', 100);
                 log(`✅ 분석 완료: ${dataInput.name} 귀하`);
             } else {
-                const reason = data.candidates?.[0]?.finishReason || "서버 응답 없음";
-                throw new Error(`데이터 추출 실패 (사유: ${reason})`);
+                throw new Error("서버로부터 데이터를 받지 못했습니다. 잠시 후 다시 시도해 주세요.");
             }
         } catch(e) { 
             log(`❌ 분석 실패: ${e.message}`);
             resultContent.innerHTML = `<div style='color:var(--accent); text-align:center; padding:30px;'>
                 <strong>⚠️ 분석 오류 발생</strong><br><br>
-                원인: ${e.message}<br><br>
-                해결: 1. 파일이 완전히 동기화된 후(녹색 배지) 분석을 누르세요. 2. API 보안키가 유효한지 확인하세요.
+                ${e.message}<br><br>
+                지침서 용량을 확인하거나 API 키 할당량을 확인해 주세요.
             </div>`;
             updateProgress('analysis', 0);
         } finally { 
