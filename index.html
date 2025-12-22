@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.2.9</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.0.3</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -21,37 +21,30 @@
         .status-badge { font-size: 0.75rem; padding: 5px 12px; border-radius: 50px; color: white; font-weight: 500; }
         .status-wait { background: #7f8c8d; }
         .status-active { background: var(--success); }
-        
-        .progress-container { width: 100%; background-color: #eee; border-radius: 10px; margin: 15px 0; display: none; height: 14px; overflow: hidden; border: 1px solid #ddd; }
-        .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--success)); transition: width 0.4s ease; position: relative; }
-        .progress-bar::after { content: ""; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background-image: linear-gradient(-45deg, rgba(255,255,255,.2) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.2) 50%, rgba(255,255,255,.2) 75%, transparent 75%, transparent); z-index: 1; background-size: 50px 50px; animation: move 1.5s linear infinite; }
-        @keyframes move { 0% { background-position: 0 0; } 100% { background-position: 50px 50px; } }
-
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 10px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
         .row { display: flex; gap: 15px; margin-bottom: 5px; }
         .col { flex: 1; min-width: 0; }
         .btn-primary { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.3s; }
-        .btn-primary:disabled { background: #566573; cursor: wait; }
+        #status-log { margin-top: 20px; padding: 15px; background: #1e1e1e; color: #00ff00; font-family: monospace; font-size: 0.8rem; border-radius: 8px; display: none; max-height: 150px; overflow-y: auto; white-space: pre-wrap; }
+        #result-box { margin-top: 30px; display: none; border: 1px solid #ddd; border-radius: 12px; background: #fff; border-top: 4px solid var(--primary); }
+        #result-content { padding: 35px; line-height: 1.8; font-size: 1.05rem; color: #2c3e50; }
         
-        #status-log { margin-top: 20px; padding: 15px; background: #1e1e1e; color: #00ff00; font-family: monospace; font-size: 0.8rem; border-radius: 8px; display: none; max-height: 150px; overflow-y: auto; }
-        #result-box { margin-top: 30px; display: none; border: 1px solid #ddd; border-radius: 12px; background: #fff; border-top: 5px solid var(--primary); }
-        #result-content { padding: 35px; line-height: 2.2; font-size: 1.05rem; }
-
         @media print { 
-            .btn-primary, .form-group, .section-title, .header .ver-badge, #status-log, input, select, textarea, #file-label, #chkSaveKey, #upload-section { display: none !important; } 
-            #result-box { border: none; display: block !important; margin-top: 0; }
+            .btn-primary, .form-group, .section-title, .header .ver-badge, #status-log, input, select, textarea, #file-label, #saveKeyLabel, .no-print { display: none !important; } 
+            .container { box-shadow: none; border: none; width: 100%; } 
+            body { padding: 0; background: white; }
+            #result-box { border: none; margin-top: 0; display: block !important; }
+            .header { background: #f8f9fa !important; color: #1a252f !important; padding: 20px; border-bottom: 2px solid #1a252f; }
+            .header p { color: #c0392b !important; }
         }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.2.9</span>
+        <span class="ver-badge">v1.0.3</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>비자 추천 & 체류 행정 전문가 분석</h1>
         <p>승인으로 증명하는 법무법인 대림의 정밀 비자 솔루션</p>
@@ -60,21 +53,20 @@
     <div class="content">
         <div class="form-group">
             <label>🔐 보안 인증 (Google AI API Key)</label>
-            <input type="password" id="apiKey" placeholder="보안 키를 입력하세요" onchange="handleKeyChange()">
-            <div style="font-size: 0.8rem; color: #7f8c8d; margin-top: 5px; display: flex; align-items: center; gap: 5px;">
+            <input type="password" id="apiKey" placeholder="보안 키를 입력하세요" onchange="saveKey()">
+            <div id="saveKeyLabel" style="font-size: 0.8rem; color: #7f8c8d; margin-top: 5px; display: flex; align-items: center; gap: 5px;">
                 <input type="checkbox" id="chkSaveKey" checked> <label for="chkSaveKey" style="cursor:pointer; font-weight:normal;">인증키 저장</label>
             </div>
         </div>
 
         <div class="section-title"><span>📂 정책 데이터 동기화</span><span id="file-label" class="status-badge status-wait">미등록</span></div>
-        <div class="form-group" id="upload-section" style="text-align:center;">
+        <div class="form-group" style="text-align:center;">
             <input type="file" id="pdfFile" accept="application/pdf">
-            <button onclick="uploadFile()" id="upload-btn" style="padding:10px 20px; margin-top:10px; cursor:pointer; background:var(--secondary); color:white; border:none; border-radius:6px;">지침서 서버 업로드</button>
-            <div id="upload-progress-container" class="progress-container"><div id="upload-progress-bar" class="progress-bar"></div></div>
+            <button onclick="uploadFile()" style="padding:10px 20px; margin-top:10px; cursor:pointer; background:var(--secondary); color:white; border:none; border-radius:6px;">지침서 서버 업로드</button>
         </div>
 
         <div class="section-title">📝 의뢰인 정보 입력</div>
-        <div class="form-group"><label>👤 의뢰인 성명</label><input type="text" id="clientName" placeholder="의뢰인 성함"></div>
+        <div class="form-group"><label>👤 의뢰인 성명</label><input type="text" id="clientName" placeholder="의뢰인 성함" value="ghd afd"></div>
         <div class="row">
             <div class="col form-group"><label>현재 비자</label><input type="text" id="visaType" value="E-9"></div>
             <div class="col form-group"><label>생년월일</label><input type="text" id="birthDate" value="1995-05-20"></div>
@@ -94,13 +86,9 @@
                         <option value="TOPIK 1급">TOPIK 1급</option>
                     </optgroup>
                     <optgroup label="KIIP (사회통합프로그램)">
-                        <option value="KIIP 5단계 합격">KIIP 5단계 이수 완료</option>
+                        <option value="KIIP 5단계 이수 완료">KIIP 5단계 이수 완료</option>
                         <option value="KIIP 4단계 합격">KIIP 4단계 합격</option>
                         <option value="KIIP 3단계 합격">KIIP 3단계 합격</option>
-                    </optgroup>
-                    <optgroup label="사전평가 점수">
-                        <option value="사전평가 85점 이상">사전평가 85점↑ (5단계)</option>
-                        <option value="사전평가 61-84점">사전평가 61-84점 (4단계)</option>
                     </optgroup>
                 </select>
             </div>
@@ -108,17 +96,28 @@
 
         <div class="section-title">⚠️ 결격 사유 체크</div>
         <div class="row">
-            <div class="col form-group"><label>형사범죄 경력</label><select id="criminalRecord"><option value="없음" selected>없음</option><option value="있음">있음</option></select></div>
-            <div class="col form-group"><label>세금 체납 여부</label><select id="taxArrears"><option value="없음" selected>없음</option><option value="있음">있음</option></select></div>
+            <div class="col form-group">
+                <label>형사범죄 경력</label>
+                <select id="criminalRecord">
+                    <option value="없음">없음</option>
+                    <option value="있음" selected>있음</option>
+                </select>
+            </div>
+            <div class="col form-group">
+                <label>세금 체납 여부</label>
+                <select id="taxArrears">
+                    <option value="없음" selected>없음</option>
+                    <option value="있음">있음</option>
+                </select>
+            </div>
         </div>
         <div class="form-group"><label>특이사항 (학력/자격증 등)</label><textarea id="details" rows="2">국내 전문학사, 용접기능사 보유, 인구감소지역 근무.</textarea></div>
         
-        <button class="btn-primary" id="run-btn" onclick="startAnalysis()">⚖️ 이규희 사무장 정밀 분석</button>
-        <div id="analysis-progress-container" class="progress-container"><div id="analysis-progress-bar" class="progress-bar"></div></div>
+        <button class="btn-primary" id="run-btn" onclick="runAnalysis()">⚖️ 이규희 사무장 정밀 분석</button>
         
         <div id="status-log"></div>
         <div id="result-box">
-            <div style="padding:15px; background:#f8f9fa; font-weight:800; border-bottom:1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+            <div class="no-print" style="padding:15px; background:#f8f9fa; font-weight:800; border-bottom:1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
                 <span>📄 비자 성공 확률 리포트</span>
                 <button onclick="window.print()" style="padding: 5px 15px; cursor:pointer; background:var(--primary); color:white; border:none; border-radius:4px;">🖨️ 리포트 인쇄</button>
             </div>
@@ -129,46 +128,25 @@
 
 <script>
     let uploadedFileUri = null;
-    let uploadedFileName = null;
-    let pollCount = 0;
-
-    // 인증키 자동 로드
     window.onload = function() {
-        const savedKey = localStorage.getItem("daelim_api_key");
-        if(savedKey) {
-            document.getElementById('apiKey').value = savedKey;
-            document.getElementById('chkSaveKey').checked = true;
-        }
+        const k = localStorage.getItem("daelim_key_v103");
+        if(k) { document.getElementById('apiKey').value = k; document.getElementById('chkSaveKey').checked = true; }
     }
-
-    function handleKeyChange() {
-        if(document.getElementById('chkSaveKey').checked) {
-            localStorage.setItem("daelim_api_key", document.getElementById('apiKey').value.trim());
-        }
+    function saveKey() {
+        const key = document.getElementById('apiKey').value.trim();
+        if(document.getElementById('chkSaveKey').checked) localStorage.setItem("daelim_key_v103", key);
+        else localStorage.removeItem("daelim_key_v103");
     }
-
     function log(msg) { 
         const b = document.getElementById('status-log'); b.style.display = 'block'; 
         b.innerText += `> ${msg}\n`; b.scrollTop = b.scrollHeight; 
     }
 
-    function updateProgress(id, percent) {
-        const bar = document.getElementById(id + '-progress-bar');
-        const container = document.getElementById(id + '-progress-container');
-        if (bar) { bar.style.width = percent + '%'; container.style.display = 'block'; }
-        if (percent >= 100) setTimeout(() => container.style.display = 'none', 1000);
-    }
-
     async function uploadFile() {
         const key = document.getElementById('apiKey').value.trim();
         const file = document.getElementById('pdfFile').files[0];
-        const btn = document.getElementById('upload-btn');
         if(!key || !file) return alert("API 키와 파일을 확인하세요.");
-        
-        btn.disabled = true;
-        log("⏳ 정책 지침서를 서버로 전송 중...");
-        updateProgress('upload', 40);
-        
+        log("⏳ 매뉴얼 서버 전송 중...");
         try {
             const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`, {
                 method: 'POST', headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
@@ -178,59 +156,19 @@
             const res = await fetch(url, { method: 'POST', headers: { 'X-Goog-Upload-Command': 'upload, finalize', 'X-Goog-Upload-Offset': '0' }, body: file });
             const data = await res.json();
             uploadedFileUri = data.file.uri;
-            uploadedFileName = data.file.name;
-            log("✅ 업로드 완료. 서버 처리를 기다립니다.");
-            updateProgress('upload', 100);
-            document.getElementById('file-label').innerText = "서버 등록완료";
+            document.getElementById('file-label').innerText = "동기화 완료";
             document.getElementById('file-label').className = "status-badge status-active";
-        } catch(e) { log("❌ 업로드 실패"); }
-        finally { btn.disabled = false; }
+            log("✅ 준비 완료.");
+        } catch(e) { log("❌ 업로드 실패."); }
     }
 
-    async function startAnalysis() {
+    async function runAnalysis() {
         const key = document.getElementById('apiKey').value.trim();
-        const clientName = document.getElementById('clientName').value.trim();
-        if(!clientName || !uploadedFileUri) return alert("의뢰인 성함과 지침서 업로드를 확인하세요.");
-        
-        const btn = document.getElementById('run-btn');
-        btn.disabled = true;
-        btn.innerText = "🔍 법무부 출입국관리사무소 조회 분석 중..."; // 버튼 라벨 즉시 변경
-        
-        document.getElementById('result-box').style.display = 'block';
-        pollCount = 0;
-        checkStatusAndRun(key, clientName);
-    }
+        if(!uploadedFileUri) return alert("지침서를 먼저 업로드하세요.");
 
-    async function checkStatusAndRun(key, name) {
-        pollCount++;
-        const resultContent = document.getElementById('result-content');
-        
-        if (pollCount > 15) {
-            resultContent.innerHTML = "⚠️ 서버 응답이 너무 늦어지고 있습니다. 잠시 후 다시 시도해 주세요.";
-            resetButton(); return;
-        }
-
-        resultContent.innerHTML = `<div style='text-align:center; padding:20px;'><div class='loader'></div><b>데이터 정밀 조회 중 (${pollCount}/15)</b><br>지침서와 입력 정보를 대조하고 있습니다. 시스템이 다운되지 않았으니 잠시만 기다려 주세요.</div>`;
-        updateProgress('analysis', pollCount * 6);
-
-        try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${uploadedFileName}?key=${key}`);
-            const data = await res.json();
-            
-            if (data.state === 'ACTIVE') {
-                log("✅ 서버 준비 완료. 최종 리포트를 생성합니다.");
-                resultContent.innerHTML = `<div style='text-align:center; padding:20px;'><div class='loader'></div><b>이규희 사무장 정밀 분석 리포트 작성 중...</b></div>`;
-                await runFinalAnalysis(key, name);
-            } else {
-                setTimeout(() => checkStatusAndRun(key, name), 2500); // 2.5초 간격 재귀 호출
-            }
-        } catch(e) { setTimeout(() => checkStatusAndRun(key, name), 2500); }
-    }
-
-    async function runFinalAnalysis(key, name) {
-        const inputData = {
-            name: name,
-            visa: document.getElementById('visaType').value,
+        const clientData = {
+            name: document.getElementById('clientName').value,
+            currentVisa: document.getElementById('visaType').value,
             birth: document.getElementById('birthDate').value,
             income: document.getElementById('income').value,
             korean: document.getElementById('koreanSkill').value,
@@ -239,43 +177,75 @@
             details: document.getElementById('details').value
         };
 
+        const btn = document.getElementById('run-btn');
+        btn.disabled = true;
+        btn.innerHTML = "⚖️ 법무부 지침 분석 중...";
+        document.getElementById('result-box').style.display = 'block';
+        document.getElementById('result-content').innerHTML = "리포트를 생성하고 있습니다. 잠시만 기다려 주십시오...";
+        
         try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${key}`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{ parts: [
-                        { text: `당신은 법무법인 대림의 이규희 사무장입니다. 제공된 지침서를 기반으로 아래 의뢰인 정보를 정밀 분석하여 리포트를 작성하십시오.
-                                
-                                [의뢰인 정보] 성명:${inputData.name}, 생년월일:${inputData.birth}, 현재비자:${inputData.visa}, 소득:${inputData.income}만원, 한국어:${inputData.korean}, 범죄경력:${inputData.criminal}, 세금체납:${inputData.tax}, 특이사항:${inputData.details}
+                        { text: `
+                            당신은 '법무법인 대림'의 대한민국 비자 행정 전문가 이규희 사무장입니다.
+                            다음 의뢰인 정보를 바탕으로 정밀 분석 리포트를 작성하십시오.
 
-                                [분석 가이드라인]
-                                1. 최상단에 "의뢰인: ${inputData.name} 귀하"를 크게 표시.
-                                2. [종합 검토 결과] -> [추천 비자 (F-2-R, E-7-4, F-2-7 등)] -> [비자별 성공 확률 %] -> [이규희 사무장 전용 분석 의견] 순으로 작성.
-                                3. **성공 확률: [00]%** 형식으로 아주 크게 강조할 것.
-                                4. 별표(*) 제거, 볼드체와 이모티콘(💡, 📊, 📝) 적극 활용.
-                                5. 2024 GNI(4,405만원) 기준을 적용하여 소득 점수를 정밀 계산.` },
+                            [의뢰인 데이터]
+                            - 성명: ${clientData.name}
+                            - 현재 비자: ${clientData.currentVisa}
+                            - 생년월일: ${clientData.birth}
+                            - 전년 소득: ${clientData.income}만원
+                            - 한국어 능력: ${clientData.korean}
+                            - 형사범죄 경력: ${clientData.criminal}
+                            - 세금 체납: ${clientData.tax}
+                            - 특이사항: ${clientData.details}
+
+                            [리포트 작성 필수 규칙]
+                            1. 최상단에 "의뢰인: ${clientData.name} 귀하"를 크게 출력.
+                            2. 2024년 GNI(4,405만원)를 기준으로 소득 점수를 계산할 것.
+                            3. 출입국관리법 제11조(입국의 금지) 및 시행령 [별표 1의2]를 인용할 것.
+                            4. 특히 **형사범죄 경력**이 '있음'인 경우, 실무적으로 비자 심사가 얼마나 엄격해지는지, 벌금액 기준(300만원 등)에 따른 위험성을 강력하게 경고할 것.
+                            5. 추천 비자(E-7-4, F-2-R, F-2-7 등)별 가능성을 분석할 것.
+                            6. 모든 문장에서 별표(*)를 제거하고 아래 이모티콘 형식을 유지할 것:
+                               - 💡 [취득 시 주요 장점]
+                               - 👨‍👩‍👧‍👦 [가족 초청 및 부여 비자]
+                               - 📅 [예상 체류 기간]
+                               - 📝 [필수 제출 서류]
+                               - 📊 [분석 및 점수 계산]
+                            7. 마지막에 "전문가 실무 조언" 섹션을 만들어 판결문 검토의 중요성을 강조할 것.
+                        ` },
                         { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                     ] }],
                     generationConfig: { temperature: 0.1, maxOutputTokens: 8192 }
                 })
             });
-            const data = await response.json();
-            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if(text) {
-                let formatted = text.replace(/\*/g, '').replace(/\n/g, "<br>");
-                formatted = formatted.replace(/([0-9]{1,3}%)/g, "<span style='color:var(--accent); font-size:1.6rem; font-weight:900; border-bottom:3px solid var(--accent);'>$1</span>");
-                document.getElementById('result-content').innerHTML = `<h2 style='text-align:center;'>의뢰인: ${inputData.name} 귀하 분석 리포트</h2><hr>${formatted}`;
-                updateProgress('analysis', 100);
-                log("✅ 리포트 생성 완료.");
-            }
-        } catch(e) { log("❌ 실패."); }
-        finally { resetButton(); }
-    }
 
-    function resetButton() {
-        const btn = document.getElementById('run-btn');
-        btn.disabled = false;
-        btn.innerText = "⚖️ 이규희 사무장 정밀 분석";
+            const data = await response.json();
+            if (data.candidates) {
+                let text = data.candidates[0].content.parts[0].text;
+                // 마크다운 제거 및 HTML 변환
+                text = text.replace(/\*/g, '');
+                let formattedText = `
+                    <div style="text-align:center; margin-bottom:30px;">
+                        <h1 style="font-size:2rem; color:#1a252f;">의뢰인: ${clientData.name} 귀하</h1>
+                        <p style="color:#c0392b; font-weight:bold;">법무법인 대림 비자 취득 가능성 정밀 분석 리포트</p>
+                        <hr style="border:1px solid #eee;">
+                    </div>
+                    ${text.replace(/\n/g, "<br>")}
+                `;
+                document.getElementById('result-content').innerHTML = formattedText;
+                log(`✅ 리포트 생성 완료.`);
+            }
+        } catch(e) { 
+            log("❌ 분석 실패: API 키 또는 서버 연결을 확인하세요."); 
+            document.getElementById('result-content').innerHTML = "오류가 발생했습니다. 다시 시도해 주세요.";
+        } finally { 
+            btn.disabled = false; 
+            btn.innerText = "⚖️ 이규희 사무장 정밀 분석"; 
+        }
     }
 </script>
 </body>
