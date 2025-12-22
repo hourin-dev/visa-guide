@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.0.3</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.0.4</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -27,16 +27,17 @@
         .row { display: flex; gap: 15px; margin-bottom: 5px; }
         .col { flex: 1; min-width: 0; }
         .btn-primary { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.3s; }
-        #status-log { margin-top: 20px; padding: 15px; background: #1e1e1e; color: #00ff00; font-family: monospace; font-size: 0.8rem; border-radius: 8px; display: none; max-height: 150px; overflow-y: auto; white-space: pre-wrap; }
-        #result-box { margin-top: 30px; display: none; border: 1px solid #ddd; border-radius: 12px; background: #fff; border-top: 4px solid var(--primary); }
-        #result-content { padding: 35px; line-height: 2.2; font-size: 1.05rem; color: #2c3e50; }
         
-        /* 프로그래스 바 스타일 추가 */
+        /* 프로그래스 바 스타일 */
         .progress-wrapper { margin-top: 15px; display: none; }
         .progress-container { width: 100%; background-color: #eee; border-radius: 10px; overflow: hidden; height: 10px; }
         .progress-bar { width: 0%; height: 100%; background-color: var(--success); transition: width 0.2s; }
         .progress-text { font-size: 0.8rem; color: #7f8c8d; margin-top: 5px; text-align: center; }
 
+        #status-log { margin-top: 20px; padding: 15px; background: #1e1e1e; color: #00ff00; font-family: monospace; font-size: 0.8rem; border-radius: 8px; display: none; max-height: 150px; overflow-y: auto; white-space: pre-wrap; }
+        #result-box { margin-top: 30px; display: none; border: 1px solid #ddd; border-radius: 12px; background: #fff; border-top: 4px solid var(--primary); }
+        #result-content { padding: 35px; line-height: 2.2; font-size: 1.05rem; color: #2c3e50; }
+        
         @media print { 
             .btn-primary, .form-group, .section-title, .header .ver-badge, #status-log, input, select, textarea, #file-label, #saveKeyLabel, .progress-wrapper { display: none !important; } 
             .container { box-shadow: none; border: none; width: 100%; } 
@@ -50,7 +51,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.0.3</span>
+        <span class="ver-badge">v1.0.4</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>비자 추천 & 체류 행정 전문가 분석</h1>
         <p>승인으로 증명하는 법무법인 대림의 정밀 비자 솔루션</p>
@@ -165,24 +166,16 @@
         log("⏳ 매뉴얼 서버 전송 준비 중...");
         wrapper.style.display = 'block';
         pBar.style.width = '0%';
-        pBar.style.backgroundColor = 'var(--success)';
         pText.innerText = '0% 업로드 중...';
 
         try {
-            // 1. Resumable Upload 세션 시작
             const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`, {
                 method: 'POST', 
-                headers: { 
-                    'X-Goog-Upload-Protocol': 'resumable', 
-                    'X-Goog-Upload-Command': 'start', 
-                    'Content-Type': 'application/json' 
-                },
+                headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
                 body: JSON.stringify({ file: { display_name: file.name } })
             });
-            
             const uploadUrl = startRes.headers.get('x-goog-upload-url');
 
-            // 2. XMLHttpRequest를 사용하여 실제 데이터 전송 및 프로그래스 추적
             const xhr = new XMLHttpRequest();
             xhr.open('POST', uploadUrl, true);
             xhr.setRequestHeader('X-Goog-Upload-Command', 'upload, finalize');
@@ -202,33 +195,25 @@
                     uploadedFileUri = data.file.uri;
                     document.getElementById('file-label').innerText = "동기화 완료";
                     document.getElementById('file-label').className = "status-badge status-active";
-                    pText.innerText = '업로드 및 동기화 완료';
-                    log("✅ 지침서 서버 동기화 완료.");
-                } else {
-                    handleUploadError();
-                }
+                    pText.innerText = '동기화 성공';
+                    log("✅ 서버 동기화 완료.");
+                } else { log("❌ 업로드 실패."); }
             };
-
-            xhr.onerror = () => handleUploadError();
             xhr.send(file);
-
-        } catch(e) { 
-            handleUploadError();
-        }
-
-        function handleUploadError() {
-            log("❌ 업로드 실패."); 
-            pBar.style.backgroundColor = 'var(--accent)';
-            pText.innerText = '업로드 실패 (연결 확인 요망)';
-        }
+        } catch(e) { log("❌ 업로드 에러."); }
     }
 
     async function runAnalysis() {
         const key = document.getElementById('apiKey').value.trim();
         if(!uploadedFileUri) return alert("지침서를 먼저 업로드하세요.");
+        
+        const clientName = document.getElementById('clientName').value;
+        const criminal = document.getElementById('criminalRecord').value;
+        const tax = document.getElementById('taxArrears').value;
+
         const btn = document.getElementById('run-btn');
         btn.disabled = true;
-        btn.innerHTML = "법무부 출입국·외국인정책본부 조회 중...";
+        btn.innerHTML = "출입국 정책 본부 데이터 매칭 중...";
         document.getElementById('result-box').style.display = 'block';
         
         try {
@@ -244,19 +229,28 @@
                         body: JSON.stringify({
                             contents: [{ parts: [
                                 { text: `당신은 법무법인 대림의 이규희 사무장입니다. 
-                                        리포트 최상단에 "의뢰인: ${document.getElementById('clientName').value} 귀하"를 크게 표시하십시오.
                                         
-                                        [분석 대상]: E-7-4, F-2-R, F-2-99, E-7-1, E-7-R, F-2-7 중 확률 50% 초과 비자.
+                                        [의뢰인 기본정보]
+                                        - 성명: ${clientName}
+                                        - 형사범죄 경력: ${criminal}
+                                        - 세금 체납 여부: ${tax}
                                         
-                                        [출력 포맷]:
-                                        1. 추천 비자명은 반드시 **볼드체**로 강조.
-                                        2. 모든 문장에서 별표(*)를 제거하고 아래 이모티콘 목록 형식을 사용할 것:
-                                           - 💡 [취득 시 주요 장점]
-                                           - 👨‍👩‍👧‍👦 [가족 초청 및 부여 비자]
-                                           - 📅 [예상 체류 기간]
-                                           - 📝 [필수 제출 서류]
-                                           - 📊 [분석 및 점수 계산]: 소득점수, 숙련도점수, 한국어점수, 가점 등을 합산한 구체적인 점수표 노출.
-                                        3. 2024 GNI(4,405만원) 기준 적용.` 
+                                        [필수 지시사항]
+                                        1. 형사범죄 경력이 '있음'이거나 세금 체납 여부가 '있음'인 경우, 리포트 최상단에 [⚠️ 출입국 행정 제약 알림] 섹션을 별도로 구성하여 "현재 입력된 결격 사유(범죄/체납)는 법무부 지침상 비자 신청 원천 반려 사유입니다. 반드시 선결 후 진행해야 합니다."라고 명확히 경고하십시오.
+                                        
+                                        2. 다만, 상담 시뮬레이션을 위해 위 결격 사유가 '완전히 해결되었다는 전제' 하에 나머지 자격(소득, 한국어 등)을 분석하여 가능한 비자 유형과 점수를 산출하십시오. 분석 시 결격 사유로 인한 감점은 제외하고 순수 자격으로만 확률을 도출하십시오.
+                                        
+                                        3. 리포트 최상단에 "의뢰인: ${clientName} 귀하"를 크게 표시하십시오.
+                                        
+                                        [분석 대상 및 포맷]
+                                        - 대상: E-7-4, F-2-R, F-2-99, E-7-1, E-7-R, F-2-7 중 확률 50% 초과 비자.
+                                        - 2024 GNI(4,405만원) 기준 적용.
+                                        - 모든 문장에 별표(*) 사용 금지, 아래 이모티콘 사용:
+                                          - 💡 [취득 시 주요 장점]
+                                          - 👨‍👩‍👧‍👦 [가족 초청 및 부여 비자]
+                                          - 📅 [예상 체류 기간]
+                                          - 📝 [필수 제출 서류]
+                                          - 📊 [분석 및 점수 계산]: 상세 점수표 포함.` 
                                 },
                                 { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                             ] }],
@@ -272,7 +266,7 @@
                     }
                 } catch(e) { continue; }
             }
-        } catch(e) { log("❌ 분석 실패."); }
+        } catch(e) { log("❌ 분석 중 오류가 발생했습니다."); }
         finally { btn.disabled = false; btn.innerText = "⚖️ 이규희 사무장 정밀 분석"; }
     }
 </script>
