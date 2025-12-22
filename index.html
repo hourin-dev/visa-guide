@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.0.4</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.0.5</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -28,7 +28,6 @@
         .col { flex: 1; min-width: 0; }
         .btn-primary { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.3s; }
         
-        /* 프로그래스 바 스타일 */
         .progress-wrapper { margin-top: 15px; display: none; }
         .progress-container { width: 100%; background-color: #eee; border-radius: 10px; overflow: hidden; height: 10px; }
         .progress-bar { width: 0%; height: 100%; background-color: var(--success); transition: width 0.2s; }
@@ -51,7 +50,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.0.4</span>
+        <span class="ver-badge">v1.0.5</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>비자 추천 & 체류 행정 전문가 분석</h1>
         <p>승인으로 증명하는 법무법인 대림의 정밀 비자 솔루션</p>
@@ -70,11 +69,8 @@
         <div class="form-group" style="text-align:center;">
             <input type="file" id="pdfFile" accept="application/pdf">
             <button onclick="uploadFile()" style="padding:10px 20px; margin-top:10px; cursor:pointer; background:var(--secondary); color:white; border:none; border-radius:6px;">지침서 서버 업로드</button>
-            
             <div id="progress-wrapper" class="progress-wrapper">
-                <div class="progress-container">
-                    <div id="progress-bar" class="progress-bar"></div>
-                </div>
+                <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
                 <div id="progress-text" class="progress-text">0% 업로드 중...</div>
             </div>
         </div>
@@ -92,12 +88,9 @@
                 <select id="koreanSkill">
                     <option value="미보유">미보유 / 한국어 구사 불가</option>
                     <optgroup label="TOPIK (한국어능력시험)">
-                        <option value="TOPIK 6급">TOPIK 6급</option>
-                        <option value="TOPIK 5급">TOPIK 5급</option>
-                        <option value="TOPIK 4급">TOPIK 4급</option>
-                        <option value="TOPIK 3급">TOPIK 3급</option>
-                        <option value="TOPIK 2급">TOPIK 2급</option>
-                        <option value="TOPIK 1급">TOPIK 1급</option>
+                        <option value="TOPIK 6급">TOPIK 6급</option><option value="TOPIK 5급">TOPIK 5급</option>
+                        <option value="TOPIK 4급">TOPIK 4급</option><option value="TOPIK 3급">TOPIK 3급</option>
+                        <option value="TOPIK 2급">TOPIK 2급</option><option value="TOPIK 1급">TOPIK 1급</option>
                     </optgroup>
                     <optgroup label="KIIP (사회통합프로그램)">
                         <option value="KIIP 5단계 이수 완료">KIIP 5단계 이수 완료</option>
@@ -105,14 +98,10 @@
                         <option value="KIIP 3단계 합격">KIIP 3단계 합격</option>
                         <option value="KIIP 2단계 합격">KIIP 2단계 합격</option>
                         <option value="KIIP 1단계 합격">KIIP 1단계 합격</option>
-                        <option value="KIIP 0단계 합격">KIIP 0단계 합격</option>
                     </optgroup>
                     <optgroup label="KIIP 사전평가">
                         <option value="사전평가 85점 이상 (5단계)">사전평가 85점↑ (5단계)</option>
                         <option value="사전평가 61-84점 (4단계)">사전평가 61-84점 (4단계)</option>
-                        <option value="사전평가 41-60점 (3단계)">사전평가 41-60점 (3단계)</option>
-                        <option value="사전평가 21-40점 (2단계)">사전평가 21-40점 (2단계)</option>
-                        <option value="사전평가 1-20점 (1단계)">사전평가 1-20점 (1단계)</option>
                     </optgroup>
                 </select>
             </div>
@@ -160,66 +149,34 @@
         const wrapper = document.getElementById('progress-wrapper');
         const pBar = document.getElementById('progress-bar');
         const pText = document.getElementById('progress-text');
-
         if(!key || !file) return alert("API 키와 파일을 확인하세요.");
-        
-        log("⏳ 매뉴얼 서버 전송 준비 중...");
+        log("⏳ 매뉴얼 서버 전송 중...");
         wrapper.style.display = 'block';
-        pBar.style.width = '0%';
-        pText.innerText = '0% 업로드 중...';
-
         try {
             const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`, {
-                method: 'POST', 
-                headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
+                method: 'POST', headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
                 body: JSON.stringify({ file: { display_name: file.name } })
             });
-            const uploadUrl = startRes.headers.get('x-goog-upload-url');
-
+            const url = startRes.headers.get('x-goog-upload-url');
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', uploadUrl, true);
+            xhr.open('POST', url, true);
             xhr.setRequestHeader('X-Goog-Upload-Command', 'upload, finalize');
-            xhr.setRequestHeader('X-Goog-Upload-Offset', '0');
-
-            xhr.upload.onprogress = function(e) {
-                if (e.lengthComputable) {
-                    const percent = Math.round((e.loaded / e.total) * 100);
-                    pBar.style.width = percent + '%';
-                    pText.innerText = percent + '% 업로드 중...';
-                }
-            };
-
-            xhr.onload = function() {
-                if (xhr.status === 200 || xhr.status === 201) {
-                    const data = JSON.parse(xhr.responseText);
-                    uploadedFileUri = data.file.uri;
-                    document.getElementById('file-label').innerText = "동기화 완료";
-                    document.getElementById('file-label').className = "status-badge status-active";
-                    pText.innerText = '동기화 성공';
-                    log("✅ 서버 동기화 완료.");
-                } else { log("❌ 업로드 실패."); }
-            };
+            xhr.upload.onprogress = (e) => { if(e.lengthComputable) { const pct = Math.round((e.loaded/e.total)*100); pBar.style.width = pct+'%'; pText.innerText = pct+'% 업로드 중...'; }};
+            xhr.onload = () => { if(xhr.status === 200 || xhr.status === 201) { uploadedFileUri = JSON.parse(xhr.responseText).file.uri; document.getElementById('file-label').innerText = "동기화 완료"; document.getElementById('file-label').className = "status-badge status-active"; pText.innerText = '동기화 완료'; log("✅ 준비 완료."); }};
             xhr.send(file);
-        } catch(e) { log("❌ 업로드 에러."); }
+        } catch(e) { log("❌ 실패."); }
     }
 
     async function runAnalysis() {
         const key = document.getElementById('apiKey').value.trim();
         if(!uploadedFileUri) return alert("지침서를 먼저 업로드하세요.");
-        
-        const clientName = document.getElementById('clientName').value;
-        const criminal = document.getElementById('criminalRecord').value;
-        const tax = document.getElementById('taxArrears').value;
-
         const btn = document.getElementById('run-btn');
-        btn.disabled = true;
-        btn.innerHTML = "출입국 정책 본부 데이터 매칭 중...";
+        btn.disabled = true; btn.innerHTML = "법무부 데이터 조회 중...";
         document.getElementById('result-box').style.display = 'block';
         
         try {
             const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
-            const listData = await listRes.json();
-            const usableModels = listData.models.filter(m => m.supportedGenerationMethods.includes("generateContent")).reverse();
+            const usableModels = (await listRes.json()).models.filter(m => m.supportedGenerationMethods.includes("generateContent")).reverse();
 
             for(let model of usableModels) {
                 log(`⏳ [${model.name.split('/')[1]}] 리포트 생성 중...`);
@@ -229,28 +186,15 @@
                         body: JSON.stringify({
                             contents: [{ parts: [
                                 { text: `당신은 법무법인 대림의 이규희 사무장입니다. 
+                                        의뢰인 성명: ${document.getElementById('clientName').value}
+                                        형사범죄: ${document.getElementById('criminalRecord').value}, 세금체납: ${document.getElementById('taxArrears').value}
                                         
-                                        [의뢰인 기본정보]
-                                        - 성명: ${clientName}
-                                        - 형사범죄 경력: ${criminal}
-                                        - 세금 체납 여부: ${tax}
-                                        
-                                        [필수 지시사항]
-                                        1. 형사범죄 경력이 '있음'이거나 세금 체납 여부가 '있음'인 경우, 리포트 최상단에 [⚠️ 출입국 행정 제약 알림] 섹션을 별도로 구성하여 "현재 입력된 결격 사유(범죄/체납)는 법무부 지침상 비자 신청 원천 반려 사유입니다. 반드시 선결 후 진행해야 합니다."라고 명확히 경고하십시오.
-                                        
-                                        2. 다만, 상담 시뮬레이션을 위해 위 결격 사유가 '완전히 해결되었다는 전제' 하에 나머지 자격(소득, 한국어 등)을 분석하여 가능한 비자 유형과 점수를 산출하십시오. 분석 시 결격 사유로 인한 감점은 제외하고 순수 자격으로만 확률을 도출하십시오.
-                                        
-                                        3. 리포트 최상단에 "의뢰인: ${clientName} 귀하"를 크게 표시하십시오.
-                                        
-                                        [분석 대상 및 포맷]
-                                        - 대상: E-7-4, F-2-R, F-2-99, E-7-1, E-7-R, F-2-7 중 확률 50% 초과 비자.
-                                        - 2024 GNI(4,405만원) 기준 적용.
-                                        - 모든 문장에 별표(*) 사용 금지, 아래 이모티콘 사용:
-                                          - 💡 [취득 시 주요 장점]
-                                          - 👨‍👩‍👧‍👦 [가족 초청 및 부여 비자]
-                                          - 📅 [예상 체류 기간]
-                                          - 📝 [필수 제출 서류]
-                                          - 📊 [분석 및 점수 계산]: 상세 점수표 포함.` 
+                                        [필수 지시]:
+                                        1. 형사범죄/세금체납이 '있음'인 경우 최상단에 [⚠️ 출입국 행정 제약 주의] 섹션을 구성하여 "현재 결격사유로 인해 신청이 반려될 수 있으므로 선결이 필요합니다."라고 강력 경고하십시오.
+                                        2. 분석은 위 결격사유가 '해결되었다고 가정'하고 진행하며, 결과는 'A/B/C' 등급이 아닌 **[1순위 추천 비자], [2순위 추천 비자]** 형식으로 나열하십시오.
+                                        3. 각 비자명 옆에 계산된 **[승인 확률: OO%]**를 명시하십시오.
+                                        4. 💡[장점], 👨‍👩‍👧‍👦[가족], 📅[체류기간], 📝[서류], 📊[점수계산] 형식을 유지하십시오.
+                                        5. 2024 GNI(4,405만원) 기준 적용. 별표(*) 제거.` 
                                 },
                                 { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                             ] }],
@@ -261,12 +205,11 @@
                     if (data.candidates) {
                         let text = data.candidates[0].content.parts[0].text.replace(/\*/g, '');
                         document.getElementById('result-content').innerHTML = text.replace(/\n/g, "<br>");
-                        log(`✅ 리포트 생성 완료.`);
-                        break;
+                        log(`✅ 완료.`); break;
                     }
                 } catch(e) { continue; }
             }
-        } catch(e) { log("❌ 분석 중 오류가 발생했습니다."); }
+        } catch(e) { log("❌ 실패."); }
         finally { btn.disabled = false; btn.innerText = "⚖️ 이규희 사무장 정밀 분석"; }
     }
 </script>
