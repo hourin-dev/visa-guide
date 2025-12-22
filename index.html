@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.2.5</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.2.6</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -21,20 +21,16 @@
         .status-wait { background: #7f8c8d; }
         .status-active { background: var(--success); }
         
-        /* 역동적인 프로그레스 바 */
         .progress-container { width: 100%; background-color: #eee; border-radius: 10px; margin: 15px 0; display: none; height: 14px; overflow: hidden; border: 1px solid #ddd; }
-        .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--success)); transition: width 0.3s ease; position: relative; }
+        .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--success)); transition: width 0.4s ease; position: relative; }
         .progress-bar::after { content: ""; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background-image: linear-gradient(-45deg, rgba(255,255,255,.2) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.2) 50%, rgba(255,255,255,.2) 75%, transparent 75%, transparent); z-index: 1; background-size: 50px 50px; animation: move 1.5s linear infinite; }
         @keyframes move { 0% { background-position: 0 0; } 100% { background-position: 50px 50px; } }
 
-        /* 로딩 스피너 */
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .form-group { margin-bottom: 20px; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
-        .row { display: flex; gap: 15px; margin-bottom: 5px; }
-        .col { flex: 1; min-width: 0; }
         .btn-primary { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.3s; }
         .btn-primary:disabled { background: #566573; cursor: wait; }
         
@@ -46,10 +42,10 @@
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.2.5</span>
+        <span class="ver-badge">v1.2.6 (고속 분석 모드)</span>
         <small>법무법인 대림 (DAELIM)</small>
-        <h1>비자 추천 & 체류 행정 전문가 분석</h1>
-        <p>승인으로 증명하는 법무법인 대림의 정밀 비자 솔루션</p>
+        <h1>비자 추천 & 행정 전문가 분석</h1>
+        <p>불필요한 대기를 제거한 고속 비자 분석 솔루션</p>
         <div class="officer-info">담당자: <strong>이규희 사무장 (010-9798-1100)</strong></div>
     </div>
     <div class="content">
@@ -65,15 +61,15 @@
             <div id="upload-progress-container" class="progress-container"><div id="upload-progress-bar" class="progress-bar"></div></div>
         </div>
 
-        <div class="section-title">📝 의뢰인 정보 입력</div>
+        <div class="section-title">📝 의뢰인 정보 입력 (테스트 모드)</div>
         <div class="form-group"><label>👤 의뢰인 성명</label><input type="text" id="clientName" placeholder="성함을 입력하세요"></div>
-        <div class="row">
-            <div class="col form-group"><label>현재 비자</label><input type="text" id="visaType" value="E-9"></div>
-            <div class="col form-group"><label>생년월일</label><input type="text" id="birthDate" value="1995-05-20"></div>
+        <div class="row" style="display:flex; gap:15px;">
+            <div class="col form-group" style="flex:1;"><label>현재 비자</label><input type="text" id="visaType" value="E-9"></div>
+            <div class="col form-group" style="flex:1;"><label>생년월일</label><input type="text" id="birthDate" value="1995-05-20"></div>
         </div>
-        <div class="row">
-            <div class="col form-group"><label>전년 소득(만원)</label><input type="number" id="income" value="3500"></div>
-            <div class="col form-group">
+        <div class="row" style="display:flex; gap:15px;">
+            <div class="col form-group" style="flex:1;"><label>전년 소득(만원)</label><input type="number" id="income" value="3500"></div>
+            <div class="col form-group" style="flex:1;">
                 <label>한국어 능력</label>
                 <select id="koreanSkill">
                     <option value="미보유">미보유 / 구사 불가</option>
@@ -83,17 +79,10 @@
                     <optgroup label="KIIP (사회통합프로그램)">
                         <option value="KIIP 5단계 이수 완료">KIIP 5단계 이수 완료</option><option value="KIIP 4단계 이수">KIIP 4단계 이수</option><option value="KIIP 3단계 이수">KIIP 3단계 이수</option>
                     </optgroup>
-                    <optgroup label="사전평가 점수">
-                        <option value="사전평가 85점 이상">사전평가 85점↑ (5단계)</option><option value="사전평가 61-84점">사전평가 61-84점 (4단계)</option>
-                    </optgroup>
                 </select>
             </div>
         </div>
-        <div class="row">
-            <div class="col form-group"><label>형사범죄 경력</label><select id="criminalRecord"><option value="없음">없음</option><option value="있음" selected>있음</option></select></div>
-            <div class="col form-group"><label>세금 체납 여부</label><select id="taxArrears"><option value="없음" selected>없음</option><option value="있음">있음</option></select></div>
-        </div>
-        <div class="form-group"><label>특이사항</label><textarea id="details" rows="2">국내 전문학사, 용접기능사 보유.</textarea></div>
+        <div class="form-group"><label>특이사항 (자격증 등)</label><textarea id="details" rows="2">국내 전문학사, 용접기능사 보유.</textarea></div>
         
         <button class="btn-primary" id="run-btn" onclick="startAnalysis()">⚖️ 이규희 사무장 정밀 분석</button>
         <div id="analysis-progress-container" class="progress-container"><div id="analysis-progress-bar" class="progress-bar"></div></div>
@@ -117,15 +106,15 @@
         const bar = document.getElementById(id + '-progress-bar');
         const container = document.getElementById(id + '-progress-container');
         if (bar) { bar.style.width = percent + '%'; container.style.display = 'block'; }
-        if (percent >= 100) setTimeout(() => container.style.display = 'none', 1500);
+        if (percent >= 100) setTimeout(() => container.style.display = 'none', 1000);
     }
 
     async function uploadFile() {
         const key = document.getElementById('apiKey').value.trim();
         const file = document.getElementById('pdfFile').files[0];
-        if(!key || !file) return alert("API 키와 지침서 파일을 먼저 선택하세요.");
-        log("⏳ 정책 지침서를 서버로 전송 중...");
-        updateProgress('upload', 30);
+        if(!key || !file) return alert("API 키와 파일을 선택하세요.");
+        log("⏳ 고속 분석을 위해 지침서를 전송합니다...");
+        updateProgress('upload', 40);
         try {
             const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`, {
                 method: 'POST', headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
@@ -136,49 +125,41 @@
             const data = await res.json();
             uploadedFileUri = data.file.uri;
             uploadedFileName = data.file.name;
-            log("✅ 업로드 성공. 서버 동기화를 기다립니다.");
+            log("✅ 전송 완료.");
             updateProgress('upload', 100);
-            document.getElementById('file-label').innerText = "서버 저장완료";
+            document.getElementById('file-label').innerText = "서버 대기 중";
             document.getElementById('file-label').className = "status-badge status-active";
         } catch(e) { log("❌ 업로드 실패"); }
     }
 
-    // 파일 상태를 비동기로 체크하는 재귀 함수 (무한 루프 방지)
-    async function pollFileStatus(key, name) {
+    async function pollStatus(key, name) {
         const resultContent = document.getElementById('result-content');
         checkCount++;
-
-        if (checkCount > 15) {
-            resultContent.innerHTML = "서버 응답이 지연되고 있습니다. 잠시 후 버튼을 다시 눌러주세요.";
-            document.getElementById('run-btn').disabled = false;
-            document.getElementById('run-btn').innerText = "⚖️ 이규희 사무장 정밀 분석";
+        if (checkCount > 10) { // 고속 모드는 10회까지만 체크
+            resultContent.innerHTML = "분석이 지연되고 있습니다. 다시 눌러주세요.";
+            resetButton();
             return;
         }
-
-        resultContent.innerHTML = `<div style='text-align:center; padding:20px;'><div class='loader'></div><b>법무부 출입국 서버 조회 분석 중 (${checkCount}/15)</b><br>시스템이 데이터를 읽고 있으니 잠시만 기다려 주세요.</div>`;
-        updateProgress('analysis', 10 + (checkCount * 5));
+        resultContent.innerHTML = `<div style='text-align:center; padding:20px;'><div class='loader'></div><b>🔍 법무부 출입국 서버 조회 분석 중 (${checkCount}/10)</b><br>시스템이 데이터를 읽고 있습니다.</div>`;
+        updateProgress('analysis', 10 + (checkCount * 8));
 
         try {
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${uploadedFileName}?key=${key}`);
             const data = await res.json();
-            
             if (data.state === 'ACTIVE') {
-                log("✅ 서버 승인 완료. 데이터 정밀 대조 시작.");
-                resultContent.innerHTML = `<div style='text-align:center; padding:20px;'><div class='loader'></div><b>정책 지침과 의뢰인 요건을 정밀 대조 중...</b><br>리포트를 완성하고 있습니다.</div>`;
-                await performFinalAnalysis(key, name);
+                log("✅ 서버 승인 완료. 분석 리포트 생성 시작.");
+                resultContent.innerHTML = `<div style='text-align:center; padding:20px;'><div class='loader'></div><b>정책 지침 대조 및 리포트 작성 중...</b></div>`;
+                await runFinalAnalysis(key, name);
             } else {
-                setTimeout(() => pollFileStatus(key, name), 2000); // 2초 뒤 다시 체크
+                setTimeout(() => pollStatus(key, name), 2000);
             }
-        } catch(e) {
-            log("❌ 상태 확인 중 오류 발생. 재시도합니다.");
-            setTimeout(() => pollFileStatus(key, name), 2000);
-        }
+        } catch(e) { setTimeout(() => pollStatus(key, name), 2000); }
     }
 
     async function startAnalysis() {
         const key = document.getElementById('apiKey').value.trim();
         const name = document.getElementById('clientName').value.trim();
-        if(!name || !uploadedFileUri) return alert("성함과 지침서 업로드를 확인하세요.");
+        if(!name || !uploadedFileUri) return alert("성함과 파일 업로드를 확인하세요.");
         
         const btn = document.getElementById('run-btn');
         btn.disabled = true;
@@ -186,17 +167,15 @@
         
         document.getElementById('result-box').style.display = 'block';
         checkCount = 0;
-        pollFileStatus(key, name); // 비동기 폴링 시작
+        pollStatus(key, name);
     }
 
-    async function performFinalAnalysis(key, name) {
+    async function runFinalAnalysis(key, name) {
         const dataInput = {
             name: name,
             visa: document.getElementById('visaType').value,
             income: document.getElementById('income').value,
             korean: document.getElementById('koreanSkill').value,
-            criminal: document.getElementById('criminalRecord').value,
-            tax: document.getElementById('taxArrears').value,
             details: document.getElementById('details').value
         };
         
@@ -205,10 +184,10 @@
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{ parts: [
-                        { text: `대한민국 비자 행정 전문가 이규희 사무장입니다. 
-                                의뢰인 [${dataInput.name}] 귀하의 정보를 정책 지침서와 대조하여 리포트를 작성하십시오.
-                                1. [검토 요건] -> [결격 사유 정밀 진단] -> [추천 비자 및 성공 확률 %] 순서로 작성.
-                                2. 성공 확률은 **성공 확률: [00]%** 형식으로 눈에 띄게 강조할 것.
+                        { text: `대한민국 최고 비자 전문가 이규희 사무장입니다. 지침서를 대조하여 분석하십시오.
+                                [의뢰인 정보] 성명:${dataInput.name}, 현재:${dataInput.visa}, 소득:${dataInput.income}만, 한국어:${dataInput.korean}, 특이사항:${dataInput.details}.
+                                1. [검토 요건] -> [추천 비자 및 성공 확률] 순서 작성.
+                                2. "성공 확률: [00]%" 형식을 빨간색과 굵은 글씨로 강조.
                                 3. 별표 제거, 볼드체와 이모티콘 사용.` },
                         { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                     ] }],
@@ -222,13 +201,16 @@
                 formatted = formatted.replace(/([0-9]{1,3}%)/g, "<span style='color:var(--accent); font-size:1.7rem; font-weight:800; border-bottom:3px solid var(--accent);'>$1</span>");
                 document.getElementById('result-content').innerHTML = `<h2 style='text-align:center;'>의뢰인: ${dataInput.name} 귀하 분석 리포트</h2><hr>${formatted}`;
                 updateProgress('analysis', 100);
-                log("✅ 리포트 생성 완료.");
+                log("✅ 분석 완료.");
             }
-        } catch(e) { log("❌ 분석 실패"); }
-        finally {
-            document.getElementById('run-btn').disabled = false;
-            document.getElementById('run-btn').innerText = "⚖️ 이규희 사무장 정밀 분석";
-        }
+        } catch(e) { log("❌ 리포트 생성 실패"); }
+        finally { resetButton(); }
+    }
+
+    function resetButton() {
+        const btn = document.getElementById('run-btn');
+        btn.disabled = false;
+        btn.innerText = "⚖️ 이규희 사무장 정밀 분석";
     }
 </script>
 </body>
