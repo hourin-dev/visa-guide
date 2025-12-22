@@ -3,49 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.2.5</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge" id="sys-version">Loading...</span>
+        <span class="ver-badge" id="sys-version">v1.2.5</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>비자 추천 & 체류 행정 전문가 분석</h1>
         <p>승인으로 증명하는 법무법인 대림의 정밀 비자 솔루션</p>
         <div class="officer-info">담당자: <strong>이규희 사무장 (010-9798-1100)</strong></div>
     </div>
+
     <div class="content">
         <div class="form-group">
             <label>🔐 보안 인증 (Google AI API Key)</label>
             <input type="password" id="apiKey" placeholder="보안 키를 입력하세요">
-            <div style="font-size: 0.8rem; color: #7f8c8d; margin-top: 5px; display: flex; align-items: center; gap: 5px;">
-                <input type="checkbox" id="chkSaveKey" checked> <label for="chkSaveKey" style="cursor:pointer;">인증키 저장</label>
+            <div class="save-key-check">
+                <input type="checkbox" id="chkSaveKey" checked> <label for="chkSaveKey">인증키 저장</label>
             </div>
         </div>
 
-        <div class="section-title"><span>📂 정책 데이터 동기화</span><span id="file-label" class="status-badge status-wait">미등록</span></div>
-        <div class="form-group" style="text-align:center;">
+        <div class="section-title">
+            <span>📂 정책 데이터 동기화</span>
+            <span id="file-label" class="status-badge status-wait">미등록</span>
+        </div>
+        <div class="upload-box">
             <input type="file" id="pdfFile" accept="application/pdf">
             <button id="upload-btn" class="btn-secondary">지침서 서버 업로드</button>
-            <div id="progress-container" style="display:none; width: 100%; background: #e0e0e0; height: 15px; border-radius: 10px; margin-top: 15px; overflow: hidden; position: relative;">
-                <div id="progress-bar" style="width: 0%; height: 100%; background: #27ae60; transition: width 0.3s;"></div>
-                <div id="progress-text" style="position: absolute; width:100%; text-align:center; top:0; font-size:0.7rem; line-height:15px; color:#000;">0%</div>
+            <div id="progress-container" style="display:none;">
+                <div id="progress-bar"></div>
+                <div id="progress-text">0%</div>
             </div>
         </div>
 
         <div class="section-title">📝 의뢰인 정보 입력</div>
-        <div class="form-group"><label>👤 의뢰인 성명</label><input type="text" id="clientName" placeholder="의뢰인 성함"></div>
-        <div class="row">
-            <div class="col form-group"><label>현재 비자 (E-9, H-2 등)</label><input type="text" id="visaType" value="H-2"></div>
-            <div class="col form-group"><label>생년월일</label><input type="date" id="birthDate" value="1995-05-20"></div>
+        <div class="form-group">
+            <label>👤 의뢰인 성명</label>
+            <input type="text" id="clientName" placeholder="의뢰인 성함">
         </div>
         <div class="row">
-            <div class="col form-group"><label>전년 소득(만원)</label><input type="number" id="income" value="3500"></div>
+            <div class="col form-group">
+                <label>현재 비자 (E-9, H-2 등)</label>
+                <input type="text" id="visaType" value="H-2">
+            </div>
+            <div class="col form-group">
+                <label>생년월일</label>
+                <input type="date" id="birthDate" value="1995-05-20">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col form-group">
+                <label>전년 소득(만원)</label>
+                <input type="number" id="income" value="3500">
+            </div>
             <div class="col form-group">
                 <label>한국어 능력 (전체 리스트)</label>
                 <select id="koreanSkill">
-                    <option value="미보유">미보유 / 한국어 구사 불가</option>
+                    <option value="미보유">미보유 / 구사 불가</option>
                     <optgroup label="TOPIK (한국어능력시험)">
                         <option value="TOPIK 6급">TOPIK 6급</option>
                         <option value="TOPIK 5급" selected>TOPIK 5급</option>
@@ -70,15 +86,31 @@
             </div>
         </div>
 
-        <div class="section-title">⚠️ 결격 사유 체크</div>
+        <div class="section-title">⚠️ 결격 사유 및 준법 체크</div>
         <div class="row">
-            <div class="col form-group"><label>형사범죄 경력</label><select id="criminalRecord"><option value="없음" selected>없음</option><option value="있음">있음</option></select></div>
-            <div class="col form-group"><label>세금 체납 여부</label><select id="taxArrears"><option value="없음" selected>없음</option><option value="체납">체납 있음</option></select></div>
+            <div class="col form-group">
+                <label>형사범죄 경력</label>
+                <select id="criminalRecord">
+                    <option value="없음" selected>없음 (Clean)</option>
+                    <option value="있음">있음 (경고)</option>
+                </select>
+            </div>
+            <div class="col form-group">
+                <label>세금 체납 여부</label>
+                <select id="taxArrears">
+                    <option value="없음" selected>없음 (완납)</option>
+                    <option value="체납">있음 (체납중)</option>
+                </select>
+            </div>
         </div>
 
         <button class="btn-primary" id="run-btn">⚖️ 이규희 사무장 정밀 분석</button>
+        
         <div id="status-log"></div>
-        <div id="result-box"><div id="result-content"></div></div>
+        
+        <div id="result-box">
+            <div id="result-content"></div>
+        </div>
     </div>
 </div>
 

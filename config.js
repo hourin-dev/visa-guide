@@ -1,5 +1,5 @@
 const CONFIG = {
-    VERSION: "1.2.5", 
+    VERSION: "1.2.5", // 전체 시스템 버전 통일
     STORAGE_KEY: "daelim_key_v125",
-    GNI_2024: 4405.1 // 2024년 확정 GNI 데이터 적용
+    GNI_2024: 4405.1 // 2024년 GNI 기준 적용
 };
