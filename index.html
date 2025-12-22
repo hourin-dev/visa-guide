@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.5</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.6</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -35,13 +35,12 @@
         #status-log { margin-top: 20px; padding: 15px; background: #1e1e1e; color: #00ff00; font-family: monospace; font-size: 0.8rem; border-radius: 8px; display: none; max-height: 150px; overflow-y: auto; white-space: pre-wrap; }
         #result-box { margin-top: 30px; display: none; border: 1px solid #ddd; border-radius: 12px; background: #fff; border-top: 4px solid var(--primary); }
         #result-content { padding: 35px; line-height: 2.2; font-size: 1.05rem; color: #2c3e50; }
-        @media print { .btn-primary, .form-group, .section-title, .header .ver-badge, #status-log, input, select, textarea, #file-label, .progress-container, #upload-btn { display: none !important; } .container { box-shadow: none; border: none; width: 100%; } body { padding: 0; background: white; } #result-box { border: none; margin-top: 0; display: block !important; } }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.1.5</span>
+        <span class="ver-badge">v1.1.6</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>비자 추천 & 체류 행정 전문가 분석</h1>
         <p>승인으로 증명하는 법무법인 대림의 정밀 비자 솔루션</p>
@@ -154,9 +153,7 @@
         const file = document.getElementById('pdfFile').files[0];
         const btn = document.getElementById('upload-btn');
         if(!key || !file) return alert("API 키와 파일을 확인하세요.");
-
         btn.disabled = true; log("⏳ 매뉴얼 서버 전송 중..."); updateProgress('upload', 20);
-
         try {
             const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`, {
                 method: 'POST', headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
@@ -165,14 +162,13 @@
             const url = startRes.headers.get('x-goog-upload-url');
             const res = await fetch(url, { method: 'POST', headers: { 'X-Goog-Upload-Command': 'upload, finalize', 'X-Goog-Upload-Offset': '0' }, body: file });
             const data = await res.json();
-            
             if (data.file && data.file.uri) {
                 uploadedFileUri = data.file.uri;
                 updateProgress('upload', 100);
                 document.getElementById('file-label').innerText = "동기화 완료";
                 document.getElementById('file-label').className = "status-badge status-active";
-                log("✅ 준비 완료. (서버 인덱싱 대기 필요)");
-            } else { throw new Error("서버 연동 실패"); }
+                log("✅ 준비 완료. (인덱싱 대기 중)");
+            }
         } catch(e) { log("❌ 업로드 실패: " + e.message); updateProgress('upload', 0); } 
         finally { btn.disabled = false; }
     }
@@ -180,21 +176,21 @@
     async function startAnalysis() {
         const key = document.getElementById('apiKey').value.trim();
         if(!uploadedFileUri) return alert("지침서를 먼저 업로드하세요.");
-        const btn = document.getElementById('run-btn');
-        btn.disabled = true;
-        
-        // 자동 재시도 로직 포함 (최대 3회 시도)
+        const btn = document.getElementById('run-btn'); btn.disabled = true;
         let success = false;
         for(let i=1; i<=3; i++) {
             log(`⚖️ 분석 시도 중... (${i}/3)`);
             success = await runAnalysis(i);
             if(success) break;
             if(i < 3) {
-                log("⚠️ 빈 응답 수신. 3초 후 재시도합니다...");
-                await new Promise(r => setTimeout(r, 3000));
+                log("⚠️ 빈 응답 수신. 5초 후 재시도합니다...");
+                await new Promise(r => setTimeout(r, 5000));
             }
         }
-        if(!success) log("❌ 모든 분석 시도가 실패했습니다. 다시 시도해주세요.");
+        if(!success) {
+            log("❌ 모든 분석 시도가 실패했습니다. API 할당량 혹은 지침서 내용을 확인하세요.");
+            document.getElementById('result-content').innerText = "분석 리포트 생성에 실패했습니다. 잠시 후 다시 시도해주세요.";
+        }
         btn.disabled = false;
     }
 
@@ -209,26 +205,23 @@
             tax: document.getElementById('taxArrears').value,
             details: document.getElementById('details').value
         };
-
         const resultContent = document.getElementById('result-content');
         document.getElementById('result-box').style.display = 'block';
         resultContent.innerHTML = `<div style='text-align:center; padding:20px;'>⏳ 서버 응답 대기 중 (시도: ${attempt}/3)...</div>`;
-        updateProgress('analysis', 30 * attempt);
-
+        updateProgress('analysis', 33 * attempt);
         try {
-            // 파일 읽기 대기 시간 (시도 횟수에 따라 늘림)
-            await new Promise(r => setTimeout(r, 2000 + (attempt * 1000)));
-
+            await new Promise(r => setTimeout(r, 3000));
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{ parts: [
-                        { text: `법무법인 대림 이규희 사무장으로서 리포트를 작성하세요. 
-                                [의뢰인] 성명: ${dataInput.name}, 비자: ${dataInput.visa}, 소득: ${dataInput.income}만, 한국어: ${dataInput.korean}, 범죄경력: ${dataInput.criminal}, 체납: ${dataInput.tax}, 특이사항: ${dataInput.details}.
-                                1. "의뢰인: ${dataInput.name} 귀하" 상단 배치.
-                                2. [검토] -> [결격사유] -> [성공 확률] 순서 작성.
-                                3. **성공 확률: [00]%** 형식 강조.
-                                4. 별표(*) 제거, 볼드체와 이모티콘 사용.` },
+                        { text: `법무법인 대림 이규희 사무장으로서 분석 리포트를 작성하십시오. 
+                                [의뢰인 정보] 성명: ${dataInput.name}, 현재 비자: ${dataInput.visa}, 전년 소득: ${dataInput.income}만원, 한국어: ${dataInput.korean}, 범죄경력: ${dataInput.criminal}, 체납: ${dataInput.tax}, 특이사항: ${dataInput.details}.
+                                1. 리포트 상단에 "의뢰인: ${dataInput.name} 귀하"를 크게 작성.
+                                2. [검토] -> [결격사유] -> [성공 확률] 순서로 분석. 
+                                3. 반드시 **성공 확률: [00]%** 형식으로 강조할 것.
+                                4. 별표(*) 제거, 볼드체와 이모티콘 사용.
+                                5. 지침서 파일의 내용을 최우선으로 참고하십시오.` },
                         { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                     ] }],
                     safetySettings: [
@@ -240,10 +233,8 @@
                     generationConfig: { temperature: 0.2, maxOutputTokens: 4000 }
                 })
             });
-
             const data = await response.json();
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
             if (text) {
                 let formatted = text.replace(/\*/g, '').replace(/\n/g, "<br>");
                 formatted = formatted.replace(/([0-9]{1,3}%)/g, "<span style='color:var(--accent); font-size:1.4rem; font-weight:800; border-bottom:2px solid var(--accent);'>$1</span>");
@@ -253,10 +244,7 @@
                 return true;
             }
             return false;
-        } catch(e) { 
-            console.error(e);
-            return false; 
-        }
+        } catch(e) { return false; }
     }
 </script>
 </body>
