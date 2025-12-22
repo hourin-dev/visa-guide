@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.5</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.6</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.1.5</span>
+        <span class="ver-badge">v1.1.6</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>비자 추천 & 체류 행정 분석</h1>
         <p>승인으로 증명하는 법무법인 대림의 정밀 솔루션</p>
@@ -36,34 +36,35 @@
             <input type="file" id="pdfFile" accept="application/pdf">
             <button id="upload-btn" class="btn-primary" style="background: var(--secondary); margin-top:15px;">출입국정책 업로드</button>
             
-            <div id="progress-container" style="display:none; width: 100%; background: #eee; height: 22px; border-radius: 11px; margin-top: 15px; overflow: hidden; border: 1px solid #ddd;">
-                <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #27ae60, #2ecc71); transition: width 0.3s ease; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold;">0%</div>
+            <div id="progress-container" style="display:none; width: 100%; background: #e0e0e0; height: 22px; border-radius: 11px; margin-top: 15px; overflow: hidden; border: 1px solid #ccc;">
+                <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #27ae60, #2ecc71); transition: width 0.3s ease; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">0%</div>
             </div>
-            <div id="progress-text" style="font-size: 0.85rem; color: var(--secondary); margin-top: 8px;"></div>
+            <div id="progress-text" style="font-size: 0.85rem; color: var(--secondary); margin-top: 8px; font-weight: 600;"></div>
         </div>
 
         <div class="section-title">📝 의뢰인 정보 입력</div>
-        <div class="form-group">
-            <label>한국어 능력</label>
-            <select id="koreanSkill">
-                <option value="미보유">미보유 / 한국어 구사 불가</option>
-                <optgroup label="TOPIK (한국어능력시험)">
-                    <option value="TOPIK 6급">TOPIK 6급</option>
-                    <option value="TOPIK 5급">TOPIK 5급</option>
-                    <option value="TOPIK 4급">TOPIK 4급</option>
-                    <option value="TOPIK 3급">TOPIK 3급</option>
-                    <option value="TOPIK 2급">TOPIK 2급</option>
-                    <option value="TOPIK 1급">TOPIK 1급</option>
-                </optgroup>
-                <optgroup label="KIIP (사회통합프로그램)">
-                    <option value="KIIP 5단계">KIIP 5단계 이수 완료</option>
-                    <option value="KIIP 4단계">KIIP 4단계 합격</option>
-                    <option value="KIIP 3단계">KIIP 3단계 합격</option>
-                    <option value="KIIP 2단계">KIIP 2단계 합격</option>
-                    <option value="KIIP 1단계">KIIP 1단계 합격</option>
-                    <option value="KIIP 0단계">KIIP 0단계 합격</option>
-                </optgroup>
-            </select>
+        <div class="form-group"><label>👤 의뢰인 성명</label><input type="text" id="clientName" placeholder="의뢰인 성함"></div>
+        <div class="row">
+            <div class="col form-group"><label>현재 비자</label><input type="text" id="visaType" value="E-9"></div>
+            <div class="col form-group">
+                <label>한국어 능력</label>
+                <select id="koreanSkill">
+                    <option value="미보유">미보유 / 한국어 구사 불가</option>
+                    <optgroup label="TOPIK (한국어능력시험)">
+                        <option value="TOPIK 6급">TOPIK 6급</option>
+                        <option value="TOPIK 5급">TOPIK 5급</option>
+                        <option value="TOPIK 4급">TOPIK 4급</option>
+                        <option value="TOPIK 3급">TOPIK 3급</option>
+                        <option value="TOPIK 2급">TOPIK 2급</option>
+                        <option value="TOPIK 1급">TOPIK 1급</option>
+                    </optgroup>
+                    <optgroup label="KIIP (사회통합프로그램)">
+                        <option value="KIIP 5단계">KIIP 5단계 이수 완료</option>
+                        <option value="KIIP 4단계">KIIP 4단계 합격</option>
+                        <option value="KIIP 3단계">KIIP 3단계 합격</option>
+                    </optgroup>
+                </select>
+            </div>
         </div>
 
         <button class="btn-primary" id="run-btn" style="margin-top:20px;">⚖️ 이규희 사무장 정밀 분석</button>
@@ -71,8 +72,8 @@
     </div>
 </div>
 
-<script src="js/config.js"></script>
-<script src="js/api.js"></script>
-<script src="js/main.js"></script>
+<script src="js/config.js" defer></script>
+<script src="js/api.js" defer></script>
+<script src="js/main.js" defer></script>
 </body>
 </html>
