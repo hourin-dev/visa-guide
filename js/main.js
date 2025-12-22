@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     let uploadedFileUri = null;
 
-    // API 키 불러오기
+    // 저장된 키 로드
     const savedKey = localStorage.getItem(CONFIG.STORAGE_KEY);
     if(savedKey) document.getElementById('apiKey').value = savedKey;
 
@@ -12,23 +12,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const pBar = document.getElementById('progress-bar');
         const pText = document.getElementById('progress-text');
 
-        if(!key || !file) return alert("키와 파일을 확인하세요.");
+        if(!key || !file) return alert("API 키와 정책 파일을 선택해 주세요.");
 
-        // 키 저장 로직
+        // 키 저장 처리
         if(document.getElementById('chkSaveKey').checked) localStorage.setItem(CONFIG.STORAGE_KEY, key);
         else localStorage.removeItem(CONFIG.STORAGE_KEY);
 
         pCont.style.display = 'block';
         pBar.style.width = '0%';
         pBar.innerText = '0%';
-        pText.innerText = "정책 파일 분석 준비 중...";
+        pText.innerText = "서버 세션 생성 중...";
 
         try {
-            // 이제 VisaAPI가 정의되어 있으므로 에러가 발생하지 않습니다.
+            // 이제 순서대로 로드되었으므로 VisaAPI를 정상적으로 인식합니다.
             const data = await VisaAPI.uploadPDF(key, file, (percent) => {
                 pBar.style.width = percent + '%';
                 pBar.innerText = percent + '%';
-                pText.innerText = percent < 100 ? `서버 전송 중...` : `전송 완료! 처리 중...`;
+                pText.innerText = percent < 100 ? "구글 클라우드로 전송 중..." : "전송 완료! 정책 동기화 중...";
             });
             
             uploadedFileUri = data.file.uri;
@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(e) {
             pText.innerText = "❌ 오류: " + e.message;
             pBar.style.background = "#c0392b";
+            console.error(e);
         }
     });
 });

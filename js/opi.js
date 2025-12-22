@@ -8,7 +8,7 @@ const VisaAPI = {
                 headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
                 body: JSON.stringify({ file: { display_name: file.name } })
             }).then(async (res) => {
-                if (!res.ok) throw new Error(`세션 생성 실패 (${res.status})`);
+                if (!res.ok) throw new Error("API 연결 실패 (키를 확인하세요)");
                 const uploadUrl = res.headers.get('x-goog-upload-url');
 
                 xhr.open('POST', uploadUrl);
@@ -24,7 +24,7 @@ const VisaAPI = {
 
                 xhr.onload = () => {
                     if (xhr.status === 200) resolve(JSON.parse(xhr.response));
-                    else reject(new Error('전송 실패'));
+                    else reject(new Error('업로드 실패'));
                 };
                 xhr.onerror = () => reject(new Error('네트워크 오류'));
                 xhr.send(file);
