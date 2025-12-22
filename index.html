@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.3</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.4</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -50,7 +50,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.1.3</span>
+        <span class="ver-badge">v1.1.4</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>비자 추천 & 체류 행정 전문가 분석</h1>
         <p>승인으로 증명하는 법무법인 대림의 정밀 비자 솔루션</p>
@@ -193,7 +193,7 @@
                 document.getElementById('file-label').className = "status-badge status-active";
                 log("✅ 준비 완료.");
             } else {
-                throw new Error("파일 동기화 응답 데이터가 없습니다.");
+                throw new Error("서버 연동 중 응답값이 비어있습니다.");
             }
         } catch(e) { 
             log("❌ 업로드 실패: " + e.message); 
@@ -226,10 +226,10 @@
         const resultBox = document.getElementById('result-box');
         const resultContent = document.getElementById('result-content');
         resultBox.style.display = 'block';
-        resultContent.innerHTML = "<div style='text-align:center; padding:20px;'>⏳ 서버 응답 대기 중입니다 (최대 10초)...</div>";
+        resultContent.innerHTML = "<div style='text-align:center; padding:20px;'>⏳ 서버 응답을 대기 중입니다 (최대 10초)...<br>지침서의 규모에 따라 시간이 더 소요될 수 있습니다.</div>";
 
         try {
-            // UNKNOWN 에러 및 응답 없음 방지를 위해 대기 시간을 5초로 연장
+            // 안정적인 처리를 위해 강제 대기 시간을 5초로 확보
             await new Promise(resolve => setTimeout(resolve, 5000));
             updateProgress('analysis', 40);
 
@@ -240,11 +240,12 @@
                         { text: `당신은 법무법인 대림의 이규희 사무장입니다. 
                                 [의뢰인 정보] 성명: ${dataInput.name}, 비자: ${dataInput.visa}, 소득: ${dataInput.income}만, 한국어: ${dataInput.korean}, 범죄경력: ${dataInput.criminal}, 체납: ${dataInput.tax}, 특이사항: ${dataInput.details}.
                                 
-                                [분석 가이드라인]
-                                1. 리포트 상단에 "의뢰인: ${dataInput.name} 귀하"를 크게 작성.
-                                2. [입력 요건 검토] -> [결격 사유 진단] -> [비자별 성공 확률 및 점수 계산] 순서 준수.
-                                3. 각 비자별 취득 가능성을 **성공 확률: [00]%** 형식으로 수치화하여 크게 강조.
-                                4. 별표(*) 제거하고 볼드체와 이모티콘(💡, 👨‍👩‍👧‍👦, 📊, ⚠️) 사용.` 
+                                [분석 요청 지침]
+                                1. 리포트 시작 부분에 "의뢰인: ${dataInput.name} 귀하"를 강조하여 작성하십시오.
+                                2. [입력 요건 검토] -> [결격 사유 진단] -> [비자별 성공 확률 및 점수 계산] 단계로 명확히 분석하십시오.
+                                3. 취득 가능성은 반드시 **성공 확률: [00]%** 형식으로 눈에 띄게 수치화하십시오.
+                                4. 가독성을 위해 별표(*)를 모두 삭제하고 볼드체와 이모티콘(💡, 👨‍👩‍👧‍👦, 📊, ⚠️)을 적절히 사용하십시오.
+                                5. 2024년 GNI(4,405만원) 기준을 엄격히 적용하십시오.` 
                         },
                         { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                     ] }],
@@ -254,32 +255,30 @@
                         { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
                         { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
                     ],
-                    generationConfig: { temperature: 0.1, maxOutputTokens: 4000 }
+                    generationConfig: { temperature: 0.1, maxOutputTokens: 5000 }
                 })
             });
 
             const data = await response.json();
             updateProgress('analysis', 80);
             
-            const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-            if (resultText) {
-                let formattedText = resultText.replace(/\*/g, '');
-                // 확률 수치 강조 스타일 적용
-                formattedText = formattedText.replace(/([0-9]{1,3}%)/g, "<span style='color:var(--accent); font-size:1.4rem; font-weight:800; border-bottom:2px solid var(--accent);'>$1</span>");
-                resultContent.innerHTML = formattedText.replace(/\n/g, "<br>");
+            // 응답 구조에서 데이터 존재 여부를 정밀하게 체크
+            if (data && data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
+                let text = data.candidates[0].content.parts[0].text.replace(/\*/g, '');
+                // 확률 수치를 시각적으로 강조
+                text = text.replace(/([0-9]{1,3}%)/g, "<span style='color:var(--accent); font-size:1.4rem; font-weight:800; border-bottom:2px solid var(--accent);'>$1</span>");
+                resultContent.innerHTML = text.replace(/\n/g, "<br>");
                 updateProgress('analysis', 100);
                 log(`✅ 분석 완료: ${dataInput.name} 귀하`);
             } else {
-                throw new Error("서버로부터 데이터를 받지 못했습니다. 잠시 후 다시 시도해 주세요.");
+                throw new Error("서버에서 빈 응답을 반환했습니다. 잠시 후 버튼을 다시 눌러주십시오.");
             }
         } catch(e) { 
             log(`❌ 분석 실패: ${e.message}`);
             resultContent.innerHTML = `<div style='color:var(--accent); text-align:center; padding:30px;'>
-                <strong>⚠️ 분석 오류 발생</strong><br><br>
-                ${e.message}<br><br>
-                지침서 용량을 확인하거나 API 키 할당량을 확인해 주세요.
-            </div>`;
+                <strong>⚠️ 정밀 분석 리포트 생성 실패</strong><br><br>
+                원인: ${e.message}<br><br>
+                대처: 1. 보안키 할당량이 남아있는지 확인하십시오.<br>2. 업로드된 PDF 파일이 손상되지 않았는지 확인하십시오.</div>`;
             updateProgress('analysis', 0);
         } finally { 
             btn.disabled = false; 
