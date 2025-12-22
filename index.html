@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.2.1</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.2.5</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.2.1</span>
+        <span class="ver-badge">v1.2.5</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>비자 추천 & 체류 행정 전문가 분석</h1>
         <p>승인으로 증명하는 법무법인 대림의 정밀 비자 솔루션</p>
@@ -30,10 +30,10 @@
         </div>
         <div class="form-group" style="text-align:center;">
             <input type="file" id="pdfFile" accept="application/pdf">
-            <button id="upload-btn" style="padding:10px 20px; margin-top:10px; cursor:pointer; background:var(--secondary); color:white; border:none; border-radius:6px;">지침서 서버 업로드</button>
-            <div id="progress-container" style="display:none; width: 100%; background: #e0e0e0; height: 20px; border-radius: 10px; margin-top: 15px; overflow: hidden; position: relative;">
-                <div id="progress-bar" style="width: 0%; height: 100%; background: var(--success); transition: width 0.3s;"></div>
-                <div id="progress-text" style="position: absolute; width:100%; text-align:center; top:0; font-size:0.75rem; line-height:20px; font-weight:bold; color:#1a252f;">0%</div>
+            <button id="upload-btn" class="btn-secondary">지침서 서버 업로드</button>
+            <div id="progress-container" style="display:none; width: 100%; background: #e0e0e0; height: 15px; border-radius: 10px; margin-top: 15px; overflow: hidden; position: relative;">
+                <div id="progress-bar" style="width: 0%; height: 100%; background: #27ae60; transition: width 0.3s;"></div>
+                <div id="progress-text" style="position: absolute; width:100%; text-align:center; top:0; font-size:0.7rem; line-height:15px; color:#000;">0%</div>
             </div>
         </div>
 
@@ -51,30 +51,56 @@
                     <option value="미보유">미보유 / 한국어 구사 불가</option>
                     <optgroup label="TOPIK (한국어능력시험)">
                         <option value="TOPIK 6급">TOPIK 6급</option>
-                        <option value="TOPIK 5급">TOPIK 5급</option>
+                        <option value="TOPIK 5급" selected>TOPIK 5급</option>
                         <option value="TOPIK 4급">TOPIK 4급</option>
                         <option value="TOPIK 3급">TOPIK 3급</option>
                         <option value="TOPIK 2급">TOPIK 2급</option>
                         <option value="TOPIK 1급">TOPIK 1급</option>
                     </optgroup>
                     <optgroup label="KIIP (사회통합프로그램)">
-                        <option value="KIIP 5단계 이수">KIIP 5단계 이수</option>
-                        <option value="KIIP 4단계 합격" selected>KIIP 4단계 합격</option>
+                        <option value="KIIP 5단계 이수 완료">KIIP 5단계 이수 완료</option>
+                        <option value="KIIP 4단계 합격">KIIP 4단계 합격</option>
                         <option value="KIIP 3단계 합격">KIIP 3단계 합격</option>
                         <option value="KIIP 2단계 합격">KIIP 2단계 합격</option>
                         <option value="KIIP 1단계 합격">KIIP 1단계 합격</option>
+                        <option value="KIIP 0단계 합격">KIIP 0단계 합격</option>
                     </optgroup>
                     <optgroup label="KIIP 사전평가">
-                        <option value="사전평가 85점 이상">85점↑ (5단계)</option>
-                        <option value="사전평가 61-84점">61-84점 (4단계)</option>
-                        <option value="사전평가 41-60점">41-60점 (3단계)</option>
+                        <option value="사전평가 85점 이상 (5단계)">사전평가 85점↑ (5단계)</option>
+                        <option value="사전평가 61-84점 (4단계)">사전평가 61-84점 (4단계)</option>
+                        <option value="사전평가 41-60점 (3단계)">사전평가 41-60점 (3단계)</option>
+                        <option value="사전평가 21-40점 (2단계)">사전평가 21-40점 (2단계)</option>
+                        <option value="사전평가 1-20점 (1단계)">사전평가 1-20점 (1단계)</option>
                     </optgroup>
                 </select>
             </div>
         </div>
 
+        <div class="section-title">⚠️ 결격 사유 체크</div>
+        <div class="row">
+            <div class="col form-group">
+                <label>형사범죄 경력</label>
+                <select id="criminalRecord">
+                    <option value="없음" selected>없음</option>
+                    <option value="있음">있음</option>
+                </select>
+            </div>
+            <div class="col form-group">
+                <label>세금 체납 여부</label>
+                <select id="taxArrears">
+                    <option value="없음" selected>없음</option>
+                    <option value="체납">체납 있음</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>기타 특이사항 (학력/자격증/근무지 등)</label>
+            <textarea id="details" rows="2">국내 전문학사, 용접기능사 보유, 인구감소지역 근무.</textarea>
+        </div>
+
         <button class="btn-primary" id="run-btn">⚖️ 이규희 사무장 정밀 분석</button>
-        <div id="status-log" style="display:none; margin-top:20px; padding:10px; background:#1e1e1e; color:#0f0; font-family:monospace; font-size:0.8rem; border-radius:8px;"></div>
+        <div id="status-log"></div>
         
         <div id="result-box">
             <div id="result-content"></div>
