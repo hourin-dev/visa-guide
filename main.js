@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     let uploadedFileUri = null;
 
-    // config.js의 버전을 HTML 배지에 자동으로 주입
+    // 1. 버전 통합 관리 및 초기화
     const verBadge = document.getElementById('sys-version');
     if(verBadge) verBadge.innerText = `v${CONFIG.VERSION}`;
 
@@ -12,70 +12,44 @@ document.addEventListener('DOMContentLoaded', () => {
         b.scrollTop = b.scrollHeight; 
     }
 
-    // 시스템 가동 로그 출력
     log(`🚀 시스템 가동 (Version: ${CONFIG.VERSION})`);
     const savedKey = localStorage.getItem(CONFIG.STORAGE_KEY);
     if(savedKey) document.getElementById('apiKey').value = savedKey;
 
-    // ---------------------------------------------------------
-    // 📂 지침서 서버 업로드 로직 (프로그레스 바 수정 핵심)
-    // ---------------------------------------------------------
+    // 2. 지침서 업로드 및 프로그레스 바 제어
     const uploadBtn = document.getElementById('upload-btn');
     if (uploadBtn) {
         uploadBtn.addEventListener('click', async () => {
             const key = document.getElementById('apiKey').value.trim();
-            const fileInput = document.getElementById('pdfFile');
-            const file = fileInput.files[0];
-            
-            // 시각적 요소 캐싱
+            const file = document.getElementById('pdfFile').files[0];
             const pCont = document.getElementById('progress-container');
             const pBar = document.getElementById('progress-bar');
             const pText = document.getElementById('progress-text');
 
-            if(!key) return alert("Google AI API 키를 입력해주세요.");
-            if(!file) return alert("PDF 지침서 파일을 먼저 선택해주세요.");
+            if(!key || !file) return alert("키와 파일을 확인하세요.");
             
-            // 1. 업로드 시작 전 UI 초기화 및 노출 (수정 포인트)
-            log("📡 지침서 서버 동기화 중...");
-            pCont.style.display = 'block'; // 프로그레스 바 컨테이너 즉시 노출
+            log("📡 지침서 서버 동기화 프로세스 시작...");
+            pCont.style.display = 'block'; // 즉시 노출
             pBar.style.width = '0%';
             pText.innerText = '0%';
-            
-            if(document.getElementById('chkSaveKey').checked) {
-                localStorage.setItem(CONFIG.STORAGE_KEY, key);
-            }
 
             try {
-                // 2. api.js의 VisaAPI 호출 및 실시간 프로그레스 반영
                 const data = await window.VisaAPI.uploadPDF(key, file, (percent) => {
-                    // 서버로부터 전달받은 진행률(percent)을 UI에 적용
                     pBar.style.width = percent + '%';
                     pText.innerText = percent + '%';
-                    
-                    if(percent === 100) {
-                        pText.innerText = "서버 인덱싱 중...";
-                    }
                 });
-
-                if (data && data.file && data.file.uri) {
-                    uploadedFileUri = data.file.uri;
-                    document.getElementById('file-label').className = "status-badge status-active";
-                    document.getElementById('file-label').innerText = "동기화 완료";
-                    log("✅ 정책 데이터 동기화 성공! (분석 준비 완료)");
-                } else {
-                    throw new Error("파일 URI 응답을 받지 못했습니다.");
-                }
-            } catch(e) {
-                log("❌ 업로드 오류: " + e.message);
-                pCont.style.display = 'none'; // 실패 시 바 숨김
-                console.error(e);
+                uploadedFileUri = data.file.uri;
+                document.getElementById('file-label').className = "status-badge status-active";
+                document.getElementById('file-label').innerText = "동기화 완료";
+                log("✅ 정책 데이터 동기화 성공! (분석 준비 완료)");
+            } catch(e) { 
+                log("❌ 업로드 실패: " + e.message); 
+                pCont.style.display = 'none'; 
             }
         });
     }
 
-    // ---------------------------------------------------------
-    // ⚖️ 분석 실행 로직 (H-2 비자 분석 및 확률 포함)
-    // ---------------------------------------------------------
+    // 3. 모델 탐색(Search) 로그 및 정밀 분석 실행
     const runBtn = document.getElementById('run-btn');
     if (runBtn) {
         runBtn.addEventListener('click', async () => {
@@ -96,13 +70,21 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             try {
-                log("🔍 최적 모델 탐색 및 정책 대조 시작...");
+                // [수정 포인트] 모델 검색(Search) 로그 출력 시작
+                log("🔍 사용 가능한 AI 모델 리스트 검색 중 (Model Search)...");
                 const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
                 const listData = await listRes.json();
+                
+                if(listData.error) throw new Error(listData.error.message);
+
                 const models = listData.models.filter(m => m.supportedGenerationMethods.includes("generateContent")).reverse();
+                log(`🔎 총 ${models.length}개의 가용 모델 발견. 최적 모델을 선별합니다.`);
 
                 let success = false;
                 for(let model of models) {
+                    const modelShortName = model.name.split('/')[1];
+                    log(`📡 [Search] ${modelShortName} 모델에 분석 요청 전송...`);
+
                     try {
                         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model.name}:generateContent?key=${key}`, {
                             method: 'POST',
@@ -110,17 +92,16 @@ document.addEventListener('DOMContentLoaded', () => {
                             body: JSON.stringify({
                                 contents: [{ parts: [
                                     { text: `당신은 법무법인 대림의 이규희 사무장입니다. 
-                                            다음 의뢰인의 비자 분석 리포트를 한국어로 작성하십시오.
-                                            
-                                            [의뢰인 정보]: ${JSON.stringify(clientData)}
-                                            [기준 지표]: 2024 GNI ${CONFIG.GNI_2024}만원
+                                            다음 의뢰인의 비자 분석 리포트를 한국어로 정밀하게 작성하십시오.
+                                            의뢰인 정보: ${JSON.stringify(clientData)}
+                                            기준 지표: 2024 GNI ${CONFIG.GNI_2024}만원
 
-                                            [리포트 작성 필수 가이드]:
-                                            1. 결격 사유 한글 표기: '형사범죄 경력: 있음/없음', '세금 체납 여부: 있음/없음'으로 명확히 표기.
-                                            2. 확률 명시: 각 추천 비자별로 '예상 합격 확률: OO%' 수치 포함.
-                                            3. 체류 장점: 💡 [취득 시 주요 장점] 섹션을 통해 가족초청, 거주 자유 등 혜택 강조.
-                                            4. H-2 비자 특화: 현재 비자가 H-2인 경우 F-4 변경, E-7-4 전환 요건을 지침서 기반으로 정밀 분석.
-                                            5. 모든 별표(*) 제거 및 볼드체/이모티콘 사용.` 
+                                            리포트 가이드:
+                                            1. 비자별 합격 확률(%) 명시.
+                                            2. 결격사유(범죄/체납) 한글 표기 및 최상단 경고.
+                                            3. 💡 [취득 시 주요 장점] 섹션 포함.
+                                            4. 하단에 "분석 일시: ${new Date().toLocaleString('ko-KR')}" 표기.
+                                            5. 모든 별표(*) 제거 및 이모티콘 사용.` 
                                     },
                                     { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                                 ] }],
@@ -129,18 +110,24 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
 
                         const resData = await response.json();
-                        if (resData.candidates) {
+                        if (resData.candidates && resData.candidates[0].content) {
                             const text = resData.candidates[0].content.parts[0].text;
                             document.getElementById('result-box').style.display = 'block';
                             document.getElementById('result-content').innerHTML = text.replace(/\n/g, '<br>').replace(/\*\*/g, '<b>').replace(/\*/g, '');
-                            log(`✅ 리포트 생성 완료 (System v${CONFIG.VERSION})`);
+                            log(`✅ [${modelShortName}] 리포트 생성이 완료되었습니다.`);
                             success = true;
-                            break;
+                            break; // 성공 시 루프 종료
                         }
-                    } catch(e) { continue; }
+                    } catch(e) { 
+                        log(`⚠️ [${modelShortName}] 응답 지연으로 다음 모델을 검색합니다.`);
+                        continue; 
+                    }
                 }
-            } catch(e) { log("❌ 분석 실패"); }
-            finally { 
+                if(!success) throw new Error("가용한 모든 모델이 응답하지 않습니다.");
+
+            } catch(e) { 
+                log("❌ 분석 오류: " + e.message); 
+            } finally { 
                 runBtn.disabled = false; 
                 runBtn.innerText = "⚖️ 이규희 사무장 정밀 분석"; 
             }
