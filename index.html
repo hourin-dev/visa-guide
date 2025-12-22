@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.4</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.5</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -21,10 +21,8 @@
         .status-badge { font-size: 0.75rem; padding: 5px 12px; border-radius: 50px; color: white; font-weight: 500; }
         .status-wait { background: #7f8c8d; }
         .status-active { background: var(--success); }
-        
         .progress-container { width: 100%; background-color: #eee; border-radius: 10px; margin: 10px 0; display: none; height: 8px; overflow: hidden; }
         .progress-bar { width: 0%; height: 100%; background-color: var(--success); transition: width 0.4s ease-in-out; }
-
         .form-group { margin-bottom: 20px; }
         .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .label-row label { font-weight: 600; font-size: 0.9rem; }
@@ -34,23 +32,16 @@
         .col { flex: 1; min-width: 0; }
         .btn-primary { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.3s; }
         .btn-primary:disabled { background: #95a5a6; cursor: not-allowed; }
-        
         #status-log { margin-top: 20px; padding: 15px; background: #1e1e1e; color: #00ff00; font-family: monospace; font-size: 0.8rem; border-radius: 8px; display: none; max-height: 150px; overflow-y: auto; white-space: pre-wrap; }
         #result-box { margin-top: 30px; display: none; border: 1px solid #ddd; border-radius: 12px; background: #fff; border-top: 4px solid var(--primary); }
         #result-content { padding: 35px; line-height: 2.2; font-size: 1.05rem; color: #2c3e50; }
-        
-        @media print { 
-            .btn-primary, .form-group, .section-title, .header .ver-badge, #status-log, input, select, textarea, #file-label, .progress-container, #upload-btn { display: none !important; } 
-            .container { box-shadow: none; border: none; width: 100%; } 
-            body { padding: 0; background: white; }
-            #result-box { border: none; margin-top: 0; display: block !important; }
-        }
+        @media print { .btn-primary, .form-group, .section-title, .header .ver-badge, #status-log, input, select, textarea, #file-label, .progress-container, #upload-btn { display: none !important; } .container { box-shadow: none; border: none; width: 100%; } body { padding: 0; background: white; } #result-box { border: none; margin-top: 0; display: block !important; } }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.1.4</span>
+        <span class="ver-badge">v1.1.5</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>비자 추천 & 체류 행정 전문가 분석</h1>
         <p>승인으로 증명하는 법무법인 대림의 정밀 비자 솔루션</p>
@@ -101,11 +92,10 @@
                         <option value="KIIP 0단계 합격">KIIP 0단계 합격</option>
                     </optgroup>
                     <optgroup label="KIIP 사전평가">
-                        <option value="사전평가 85점 이상 (5단계)">사전평가 85점↑ (5단계)</option>
-                        <option value="사전평가 61-84점 (4단계)">사전평가 61-84점 (4단계)</option>
-                        <option value="사전평가 41-60점 (3단계)">사전평가 41-60점 (3단계)</option>
-                        <option value="사전평가 21-40점 (2단계)">사전평가 21-40점 (2단계)</option>
-                        <option value="사전평가 1-20점 (1단계)">사전평가 1-20점 (1단계)</option>
+                        <option value="사전평가 85점 이상">사전평가 85점↑ (5단계)</option>
+                        <option value="사전평가 61-84점">사전평가 61-84점 (4단계)</option>
+                        <option value="사전평가 41-60점">사전평가 41-60점 (3단계)</option>
+                        <option value="사전평가 21-40점">사전평가 21-40점 (2단계)</option>
                     </optgroup>
                 </select>
             </div>
@@ -118,7 +108,7 @@
         </div>
         <div class="form-group"><label>특이사항 (학력/자격증 등)</label><textarea id="details" rows="2">국내 전문학사, 용접기능사 보유, 인구감소지역 근무.</textarea></div>
         
-        <button class="btn-primary" id="run-btn" onclick="runAnalysis()">⚖️ 이규희 사무장 정밀 분석</button>
+        <button class="btn-primary" id="run-btn" onclick="startAnalysis()">⚖️ 이규희 사무장 정밀 분석</button>
         <div id="analysis-progress-container" class="progress-container"><div id="analysis-progress-bar" class="progress-bar"></div></div>
         
         <div id="status-log"></div>
@@ -137,19 +127,13 @@
 
     window.onload = function() {
         const k = localStorage.getItem("daelim_key_v103");
-        if(k) {
-            document.getElementById('apiKey').value = k;
-            document.getElementById('chkSaveKey').checked = true;
-        }
+        if(k) { document.getElementById('apiKey').value = k; document.getElementById('chkSaveKey').checked = true; }
     }
 
     function saveKey() {
         const key = document.getElementById('apiKey').value.trim();
-        if(document.getElementById('chkSaveKey').checked) {
-            localStorage.setItem("daelim_key_v103", key);
-        } else {
-            localStorage.removeItem("daelim_key_v103");
-        }
+        if(document.getElementById('chkSaveKey').checked) localStorage.setItem("daelim_key_v103", key);
+        else localStorage.removeItem("daelim_key_v103");
     }
 
     function log(msg) { 
@@ -161,8 +145,7 @@
         const container = document.getElementById(id + '-progress-container');
         const bar = document.getElementById(id + '-progress-bar');
         if (!container || !bar) return;
-        container.style.display = 'block';
-        bar.style.width = percent + '%';
+        container.style.display = 'block'; bar.style.width = percent + '%';
         if(percent >= 100) setTimeout(() => container.style.display = 'none', 1500);
     }
 
@@ -172,16 +155,13 @@
         const btn = document.getElementById('upload-btn');
         if(!key || !file) return alert("API 키와 파일을 확인하세요.");
 
-        btn.disabled = true;
-        log("⏳ 매뉴얼 서버 전송 중...");
-        updateProgress('upload', 20);
+        btn.disabled = true; log("⏳ 매뉴얼 서버 전송 중..."); updateProgress('upload', 20);
 
         try {
             const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`, {
                 method: 'POST', headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
                 body: JSON.stringify({ file: { display_name: file.name } })
             });
-            updateProgress('upload', 50);
             const url = startRes.headers.get('x-goog-upload-url');
             const res = await fetch(url, { method: 'POST', headers: { 'X-Goog-Upload-Command': 'upload, finalize', 'X-Goog-Upload-Offset': '0' }, body: file });
             const data = await res.json();
@@ -191,31 +171,38 @@
                 updateProgress('upload', 100);
                 document.getElementById('file-label').innerText = "동기화 완료";
                 document.getElementById('file-label').className = "status-badge status-active";
-                log("✅ 준비 완료.");
-            } else {
-                throw new Error("서버 연동 중 응답값이 비어있습니다.");
-            }
-        } catch(e) { 
-            log("❌ 업로드 실패: " + e.message); 
-            updateProgress('upload', 0);
-        } finally { btn.disabled = false; }
+                log("✅ 준비 완료. (서버 인덱싱 대기 필요)");
+            } else { throw new Error("서버 연동 실패"); }
+        } catch(e) { log("❌ 업로드 실패: " + e.message); updateProgress('upload', 0); } 
+        finally { btn.disabled = false; }
     }
 
-    async function runAnalysis() {
+    async function startAnalysis() {
         const key = document.getElementById('apiKey').value.trim();
-        const clientName = document.getElementById('clientName').value.trim();
-        if(!clientName) return alert("의뢰인 성함을 입력하세요.");
         if(!uploadedFileUri) return alert("지침서를 먼저 업로드하세요.");
-
         const btn = document.getElementById('run-btn');
         btn.disabled = true;
-        btn.innerText = "법무부 출입국관리사무소 조회 중...";
-        updateProgress('analysis', 10);
+        
+        // 자동 재시도 로직 포함 (최대 3회 시도)
+        let success = false;
+        for(let i=1; i<=3; i++) {
+            log(`⚖️ 분석 시도 중... (${i}/3)`);
+            success = await runAnalysis(i);
+            if(success) break;
+            if(i < 3) {
+                log("⚠️ 빈 응답 수신. 3초 후 재시도합니다...");
+                await new Promise(r => setTimeout(r, 3000));
+            }
+        }
+        if(!success) log("❌ 모든 분석 시도가 실패했습니다. 다시 시도해주세요.");
+        btn.disabled = false;
+    }
 
+    async function runAnalysis(attempt) {
+        const key = document.getElementById('apiKey').value.trim();
         const dataInput = {
-            name: clientName,
+            name: document.getElementById('clientName').value.trim(),
             visa: document.getElementById('visaType').value,
-            birth: document.getElementById('birthDate').value,
             income: document.getElementById('income').value,
             korean: document.getElementById('koreanSkill').value,
             criminal: document.getElementById('criminalRecord').value,
@@ -223,30 +210,25 @@
             details: document.getElementById('details').value
         };
 
-        const resultBox = document.getElementById('result-box');
         const resultContent = document.getElementById('result-content');
-        resultBox.style.display = 'block';
-        resultContent.innerHTML = "<div style='text-align:center; padding:20px;'>⏳ 서버 응답을 대기 중입니다 (최대 10초)...<br>지침서의 규모에 따라 시간이 더 소요될 수 있습니다.</div>";
+        document.getElementById('result-box').style.display = 'block';
+        resultContent.innerHTML = `<div style='text-align:center; padding:20px;'>⏳ 서버 응답 대기 중 (시도: ${attempt}/3)...</div>`;
+        updateProgress('analysis', 30 * attempt);
 
         try {
-            // 안정적인 처리를 위해 강제 대기 시간을 5초로 확보
-            await new Promise(resolve => setTimeout(resolve, 5000));
-            updateProgress('analysis', 40);
+            // 파일 읽기 대기 시간 (시도 횟수에 따라 늘림)
+            await new Promise(r => setTimeout(r, 2000 + (attempt * 1000)));
 
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{ parts: [
-                        { text: `당신은 법무법인 대림의 이규희 사무장입니다. 
-                                [의뢰인 정보] 성명: ${dataInput.name}, 비자: ${dataInput.visa}, 소득: ${dataInput.income}만, 한국어: ${dataInput.korean}, 범죄경력: ${dataInput.criminal}, 체납: ${dataInput.tax}, 특이사항: ${dataInput.details}.
-                                
-                                [분석 요청 지침]
-                                1. 리포트 시작 부분에 "의뢰인: ${dataInput.name} 귀하"를 강조하여 작성하십시오.
-                                2. [입력 요건 검토] -> [결격 사유 진단] -> [비자별 성공 확률 및 점수 계산] 단계로 명확히 분석하십시오.
-                                3. 취득 가능성은 반드시 **성공 확률: [00]%** 형식으로 눈에 띄게 수치화하십시오.
-                                4. 가독성을 위해 별표(*)를 모두 삭제하고 볼드체와 이모티콘(💡, 👨‍👩‍👧‍👦, 📊, ⚠️)을 적절히 사용하십시오.
-                                5. 2024년 GNI(4,405만원) 기준을 엄격히 적용하십시오.` 
-                        },
+                        { text: `법무법인 대림 이규희 사무장으로서 리포트를 작성하세요. 
+                                [의뢰인] 성명: ${dataInput.name}, 비자: ${dataInput.visa}, 소득: ${dataInput.income}만, 한국어: ${dataInput.korean}, 범죄경력: ${dataInput.criminal}, 체납: ${dataInput.tax}, 특이사항: ${dataInput.details}.
+                                1. "의뢰인: ${dataInput.name} 귀하" 상단 배치.
+                                2. [검토] -> [결격사유] -> [성공 확률] 순서 작성.
+                                3. **성공 확률: [00]%** 형식 강조.
+                                4. 별표(*) 제거, 볼드체와 이모티콘 사용.` },
                         { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                     ] }],
                     safetySettings: [
@@ -255,34 +237,25 @@
                         { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
                         { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
                     ],
-                    generationConfig: { temperature: 0.1, maxOutputTokens: 5000 }
+                    generationConfig: { temperature: 0.2, maxOutputTokens: 4000 }
                 })
             });
 
             const data = await response.json();
-            updateProgress('analysis', 80);
-            
-            // 응답 구조에서 데이터 존재 여부를 정밀하게 체크
-            if (data && data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
-                let text = data.candidates[0].content.parts[0].text.replace(/\*/g, '');
-                // 확률 수치를 시각적으로 강조
-                text = text.replace(/([0-9]{1,3}%)/g, "<span style='color:var(--accent); font-size:1.4rem; font-weight:800; border-bottom:2px solid var(--accent);'>$1</span>");
-                resultContent.innerHTML = text.replace(/\n/g, "<br>");
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (text) {
+                let formatted = text.replace(/\*/g, '').replace(/\n/g, "<br>");
+                formatted = formatted.replace(/([0-9]{1,3}%)/g, "<span style='color:var(--accent); font-size:1.4rem; font-weight:800; border-bottom:2px solid var(--accent);'>$1</span>");
+                resultContent.innerHTML = formatted;
                 updateProgress('analysis', 100);
-                log(`✅ 분석 완료: ${dataInput.name} 귀하`);
-            } else {
-                throw new Error("서버에서 빈 응답을 반환했습니다. 잠시 후 버튼을 다시 눌러주십시오.");
+                log(`✅ 분석 완료.`);
+                return true;
             }
+            return false;
         } catch(e) { 
-            log(`❌ 분석 실패: ${e.message}`);
-            resultContent.innerHTML = `<div style='color:var(--accent); text-align:center; padding:30px;'>
-                <strong>⚠️ 정밀 분석 리포트 생성 실패</strong><br><br>
-                원인: ${e.message}<br><br>
-                대처: 1. 보안키 할당량이 남아있는지 확인하십시오.<br>2. 업로드된 PDF 파일이 손상되지 않았는지 확인하십시오.</div>`;
-            updateProgress('analysis', 0);
-        } finally { 
-            btn.disabled = false; 
-            btn.innerText = "⚖️ 이규희 사무장 정밀 분석"; 
+            console.error(e);
+            return false; 
         }
     }
 </script>
