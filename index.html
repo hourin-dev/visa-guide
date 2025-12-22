@@ -31,8 +31,14 @@
         #result-box { margin-top: 30px; display: none; border: 1px solid #ddd; border-radius: 12px; background: #fff; border-top: 4px solid var(--primary); }
         #result-content { padding: 35px; line-height: 2.2; font-size: 1.05rem; color: #2c3e50; }
         
+        /* 프로그래스 바 스타일 추가 */
+        .progress-wrapper { margin-top: 15px; display: none; }
+        .progress-container { width: 100%; background-color: #eee; border-radius: 10px; overflow: hidden; height: 10px; }
+        .progress-bar { width: 0%; height: 100%; background-color: var(--success); transition: width 0.2s; }
+        .progress-text { font-size: 0.8rem; color: #7f8c8d; margin-top: 5px; text-align: center; }
+
         @media print { 
-            .btn-primary, .form-group, .section-title, .header .ver-badge, #status-log, input, select, textarea, #file-label, #saveKeyLabel { display: none !important; } 
+            .btn-primary, .form-group, .section-title, .header .ver-badge, #status-log, input, select, textarea, #file-label, #saveKeyLabel, .progress-wrapper { display: none !important; } 
             .container { box-shadow: none; border: none; width: 100%; } 
             body { padding: 0; background: white; }
             #result-box { border: none; margin-top: 0; display: block !important; }
@@ -63,6 +69,13 @@
         <div class="form-group" style="text-align:center;">
             <input type="file" id="pdfFile" accept="application/pdf">
             <button onclick="uploadFile()" style="padding:10px 20px; margin-top:10px; cursor:pointer; background:var(--secondary); color:white; border:none; border-radius:6px;">지침서 서버 업로드</button>
+            
+            <div id="progress-wrapper" class="progress-wrapper">
+                <div class="progress-container">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
+                <div id="progress-text" class="progress-text">0% 업로드 중...</div>
+            </div>
         </div>
 
         <div class="section-title">📝 의뢰인 정보 입력</div>
@@ -143,21 +156,71 @@
     async function uploadFile() {
         const key = document.getElementById('apiKey').value.trim();
         const file = document.getElementById('pdfFile').files[0];
+        const wrapper = document.getElementById('progress-wrapper');
+        const pBar = document.getElementById('progress-bar');
+        const pText = document.getElementById('progress-text');
+
         if(!key || !file) return alert("API 키와 파일을 확인하세요.");
-        log("⏳ 매뉴얼 서버 전송 중...");
+        
+        log("⏳ 매뉴얼 서버 전송 준비 중...");
+        wrapper.style.display = 'block';
+        pBar.style.width = '0%';
+        pBar.style.backgroundColor = 'var(--success)';
+        pText.innerText = '0% 업로드 중...';
+
         try {
+            // 1. Resumable Upload 세션 시작
             const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`, {
-                method: 'POST', headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
+                method: 'POST', 
+                headers: { 
+                    'X-Goog-Upload-Protocol': 'resumable', 
+                    'X-Goog-Upload-Command': 'start', 
+                    'Content-Type': 'application/json' 
+                },
                 body: JSON.stringify({ file: { display_name: file.name } })
             });
-            const url = startRes.headers.get('x-goog-upload-url');
-            const res = await fetch(url, { method: 'POST', headers: { 'X-Goog-Upload-Command': 'upload, finalize', 'X-Goog-Upload-Offset': '0' }, body: file });
-            const data = await res.json();
-            uploadedFileUri = data.file.uri;
-            document.getElementById('file-label').innerText = "동기화 완료";
-            document.getElementById('file-label').className = "status-badge status-active";
-            log("✅ 준비 완료.");
-        } catch(e) { log("❌ 업로드 실패."); }
+            
+            const uploadUrl = startRes.headers.get('x-goog-upload-url');
+
+            // 2. XMLHttpRequest를 사용하여 실제 데이터 전송 및 프로그래스 추적
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', uploadUrl, true);
+            xhr.setRequestHeader('X-Goog-Upload-Command', 'upload, finalize');
+            xhr.setRequestHeader('X-Goog-Upload-Offset', '0');
+
+            xhr.upload.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    pBar.style.width = percent + '%';
+                    pText.innerText = percent + '% 업로드 중...';
+                }
+            };
+
+            xhr.onload = function() {
+                if (xhr.status === 200 || xhr.status === 201) {
+                    const data = JSON.parse(xhr.responseText);
+                    uploadedFileUri = data.file.uri;
+                    document.getElementById('file-label').innerText = "동기화 완료";
+                    document.getElementById('file-label').className = "status-badge status-active";
+                    pText.innerText = '업로드 및 동기화 완료';
+                    log("✅ 지침서 서버 동기화 완료.");
+                } else {
+                    handleUploadError();
+                }
+            };
+
+            xhr.onerror = () => handleUploadError();
+            xhr.send(file);
+
+        } catch(e) { 
+            handleUploadError();
+        }
+
+        function handleUploadError() {
+            log("❌ 업로드 실패."); 
+            pBar.style.backgroundColor = 'var(--accent)';
+            pText.innerText = '업로드 실패 (연결 확인 요망)';
+        }
     }
 
     async function runAnalysis() {
@@ -165,7 +228,7 @@
         if(!uploadedFileUri) return alert("지침서를 먼저 업로드하세요.");
         const btn = document.getElementById('run-btn');
         btn.disabled = true;
-        btn.innerHTML = "<span class='loading-dots'>법무부 출입국·외국인정책본부 조회 중</span>";
+        btn.innerHTML = "법무부 출입국·외국인정책본부 조회 중...";
         document.getElementById('result-box').style.display = 'block';
         
         try {
@@ -209,7 +272,7 @@
                     }
                 } catch(e) { continue; }
             }
-        } catch(e) { log("❌ 실패."); }
+        } catch(e) { log("❌ 분석 실패."); }
         finally { btn.disabled = false; btn.innerText = "⚖️ 이규희 사무장 정밀 분석"; }
     }
 </script>
