@@ -3,12 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 전문가 시스템 v1.1.7</title>
+    <title>비자 행정 전문가 시스템 v1.1.9</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <script src="js/config.js" defer></script>
-    <script src="js/api.js" defer></script>
-    <script src="js/main.js" defer></script>
+<div class="container">
+    <div class="header">
+        <span class="ver-badge">v1.1.9</span>
+        <small>법무법인 대림 (DAELIM)</small>
+        <h1>비자 추천 & 행정 분석 시스템</h1>
+        <p>이규희 사무장 정밀 분석 모듈</p>
+    </div>
+
+    <div class="content">
+        <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label>🔐 보안 인증 (API Key)</label>
+                <div style="font-size: 0.8rem; display: flex; align-items: center; gap: 5px;">
+                    <input type="checkbox" id="chkSaveKey" style="width: auto;" checked> <label for="chkSaveKey" style="cursor:pointer;">인증저장</label>
+                </div>
+            </div>
+            <input type="password" id="apiKey" placeholder="Google Gemini API 키 입력">
+        </div>
+
+        <div class="section-title">
+            <span>📂 정책 데이터 동기화</span>
+            <span id="file-label" class="status-badge status-wait">미등록</span>
+        </div>
+        <div class="form-group" style="text-align:center;">
+            <input type="file" id="pdfFile" accept="application/pdf">
+            <button id="upload-btn" class="btn-primary" style="background: #34495e; margin-top: 15px;">출입국정책 업로드</button>
+            <div id="progress-container" style="display:none; width: 100%; background: #e0e0e0; height: 24px; border-radius: 12px; margin-top: 20px; overflow: hidden; position: relative; border: 1px solid #ccc;">
+                <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #27ae60, #2ecc71); transition: width 0.3s ease;"></div>
+                <div id="progress-text" style="position: absolute; width: 100%; text-align: center; top: 0; line-height: 24px; font-size: 0.85rem; font-weight: bold; color: #1a252f;">0%</div>
+            </div>
+            <div id="progress-status" style="margin-top:10px; font-size:0.9rem; font-weight:bold; color:#34495e;"></div>
+        </div>
+
+        <div class="section-title">📝 의뢰인 정보 입력</div>
+        <div class="form-group">
+            <label>한국어 능력</label>
+            <select id="koreanSkill">
+                <option value="미보유">미보유</option>
+                <optgroup label="TOPIK">
+                    <option value="TOPIK 5급 이상">TOPIK 5급/6급</option>
+                    <option value="TOPIK 4급">TOPIK 4급</option>
+                </optgroup>
+                <optgroup label="사회통합프로그램(KIIP)">
+                    <option value="KIIP 5단계">KIIP 5단계 이수</option>
+                    <option value="KIIP 4단계">KIIP 4단계 합격</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <button class="btn-primary" id="run-btn">⚖️ 정밀 분석 리포트 생성</button>
+        <div id="result-box" style="margin-top: 30px; display: none; border-top: 3px solid #1a252f; background: #f9f9f9; padding: 20px; border-radius: 8px;">
+            <div id="result-content"></div>
+        </div>
+    </div>
+</div>
+
+<script src="config.js" defer></script>
+<script src="api.js" defer></script>
+<script src="main.js" defer></script>
 </body>
 </html>
