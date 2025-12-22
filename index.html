@@ -2,36 +2,88 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>비자 행정 시스템 v1.2.1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.2.1</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <select id="koreanSkill">
-        <option value="미보유">미보유</option>
-        <optgroup label="TOPIK (한국어능력시험)">
-            <option value="TOPIK 6급">TOPIK 6급</option>
-            <option value="TOPIK 5급">TOPIK 5급</option>
-            <option value="TOPIK 4급">TOPIK 4급</option>
-            <option value="TOPIK 3급">TOPIK 3급</option>
-            <option value="TOPIK 2급">TOPIK 2급</option>
-            <option value="TOPIK 1급">TOPIK 1급</option>
-        </optgroup>
-        <optgroup label="KIIP (사회통합프로그램)">
-            <option value="KIIP 5단계 이수">KIIP 5단계 이수</option>
-            <option value="KIIP 4단계 합격" selected>KIIP 4단계 합격</option>
-            <option value="KIIP 3단계 합격">KIIP 3단계 합격</option>
-            <option value="KIIP 2단계 합격">KIIP 2단계 합격</option>
-            <option value="KIIP 1단계 합격">KIIP 1단계 합격</option>
-            <option value="KIIP 0단계 합격">KIIP 0단계 합격</option>
-        </optgroup>
-        <optgroup label="KIIP 사전평가">
-            <option value="사전평가 85점 이상">85점↑ (5단계)</option>
-            <option value="사전평가 61-84점">61-84점 (4단계)</option>
-        </optgroup>
-    </select>
+<div class="container">
+    <div class="header">
+        <span class="ver-badge">v1.2.1</span>
+        <small>법무법인 대림 (DAELIM)</small>
+        <h1>비자 추천 & 체류 행정 전문가 분석</h1>
+        <p>승인으로 증명하는 법무법인 대림의 정밀 비자 솔루션</p>
+        <div class="officer-info">담당자: <strong>이규희 사무장 (010-9798-1100)</strong></div>
+    </div>
+    <div class="content">
+        <div class="form-group">
+            <label>🔐 보안 인증 (Google AI API Key)</label>
+            <input type="password" id="apiKey" placeholder="보안 키를 입력하세요">
+            <div style="font-size: 0.8rem; color: #7f8c8d; margin-top: 5px; display: flex; align-items: center; gap: 5px;">
+                <input type="checkbox" id="chkSaveKey" checked> <label for="chkSaveKey" style="cursor:pointer;">인증키 저장</label>
+            </div>
+        </div>
 
-    <script src="config.js" defer></script>
-    <script src="api.js" defer></script>
-    <script src="main.js" defer></script>
+        <div class="section-title">
+            <span>📂 정책 데이터 동기화</span>
+            <span id="file-label" class="status-badge status-wait">미등록</span>
+        </div>
+        <div class="form-group" style="text-align:center;">
+            <input type="file" id="pdfFile" accept="application/pdf">
+            <button id="upload-btn" style="padding:10px 20px; margin-top:10px; cursor:pointer; background:var(--secondary); color:white; border:none; border-radius:6px;">지침서 서버 업로드</button>
+            <div id="progress-container" style="display:none; width: 100%; background: #e0e0e0; height: 20px; border-radius: 10px; margin-top: 15px; overflow: hidden; position: relative;">
+                <div id="progress-bar" style="width: 0%; height: 100%; background: var(--success); transition: width 0.3s;"></div>
+                <div id="progress-text" style="position: absolute; width:100%; text-align:center; top:0; font-size:0.75rem; line-height:20px; font-weight:bold; color:#1a252f;">0%</div>
+            </div>
+        </div>
+
+        <div class="section-title">📝 의뢰인 정보 입력</div>
+        <div class="form-group"><label>👤 의뢰인 성명</label><input type="text" id="clientName" placeholder="의뢰인 성함"></div>
+        <div class="row">
+            <div class="col form-group"><label>현재 비자</label><input type="text" id="visaType" value="E-9"></div>
+            <div class="col form-group"><label>생년월일</label><input type="date" id="birthDate" value="1995-05-20"></div>
+        </div>
+        <div class="row">
+            <div class="col form-group"><label>전년 소득(만원)</label><input type="number" id="income" value="3500"></div>
+            <div class="col form-group">
+                <label>한국어 능력 (전체 리스트)</label>
+                <select id="koreanSkill">
+                    <option value="미보유">미보유 / 한국어 구사 불가</option>
+                    <optgroup label="TOPIK (한국어능력시험)">
+                        <option value="TOPIK 6급">TOPIK 6급</option>
+                        <option value="TOPIK 5급">TOPIK 5급</option>
+                        <option value="TOPIK 4급">TOPIK 4급</option>
+                        <option value="TOPIK 3급">TOPIK 3급</option>
+                        <option value="TOPIK 2급">TOPIK 2급</option>
+                        <option value="TOPIK 1급">TOPIK 1급</option>
+                    </optgroup>
+                    <optgroup label="KIIP (사회통합프로그램)">
+                        <option value="KIIP 5단계 이수">KIIP 5단계 이수</option>
+                        <option value="KIIP 4단계 합격" selected>KIIP 4단계 합격</option>
+                        <option value="KIIP 3단계 합격">KIIP 3단계 합격</option>
+                        <option value="KIIP 2단계 합격">KIIP 2단계 합격</option>
+                        <option value="KIIP 1단계 합격">KIIP 1단계 합격</option>
+                    </optgroup>
+                    <optgroup label="KIIP 사전평가">
+                        <option value="사전평가 85점 이상">85점↑ (5단계)</option>
+                        <option value="사전평가 61-84점">61-84점 (4단계)</option>
+                        <option value="사전평가 41-60점">41-60점 (3단계)</option>
+                    </optgroup>
+                </select>
+            </div>
+        </div>
+
+        <button class="btn-primary" id="run-btn">⚖️ 이규희 사무장 정밀 분석</button>
+        <div id="status-log" style="display:none; margin-top:20px; padding:10px; background:#1e1e1e; color:#0f0; font-family:monospace; font-size:0.8rem; border-radius:8px;"></div>
+        
+        <div id="result-box">
+            <div id="result-content"></div>
+        </div>
+    </div>
+</div>
+
+<script src="config.js" defer></script>
+<script src="api.js" defer></script>
+<script src="main.js" defer></script>
 </body>
 </html>
