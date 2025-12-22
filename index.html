@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 전문가 분석 시스템 v2.0.0</title>
+    <title>법무법인 대림 비자 전문가 시스템 v2.0.0</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -63,25 +63,25 @@
                         <option value="미보유">미보유 / 구사 불가</option>
                         <optgroup label="TOPIK (한국어능력시험)">
                             <option value="TOPIK 6급">TOPIK 6급</option>
-                            <option value="TOPIK 5급">TOPIK 5급</option>
+                            <option value="TOPIK 5급" selected>TOPIK 5급</option>
                             <option value="TOPIK 4급">TOPIK 4급</option>
                             <option value="TOPIK 3급">TOPIK 3급</option>
                             <option value="TOPIK 2급">TOPIK 2급</option>
                             <option value="TOPIK 1급">TOPIK 1급</option>
                         </optgroup>
-                        <optgroup label="KIIP (사회통합프로그램 이수)">
-                            <option value="KIIP 5단계 이수 완료">KIIP 5단계 이수 완료 (영주용)</option>
-                            <option value="KIIP 5단계 배정(4단계합격)">KIIP 4단계 합격 (5단계 배정)</option>
-                            <option value="KIIP 4단계 배정(3단계합격)">KIIP 3단계 합격 (4단계 배정)</option>
-                            <option value="KIIP 3단계 배정(2단계합격)">KIIP 2단계 합격 (3단계 배정)</option>
-                            <option value="KIIP 2단계 배정(1단계합격)">KIIP 1단계 합격 (2단계 배정)</option>
-                            <option value="KIIP 1단계 배정(사전평가)">KIIP 0단계 합격 (1단계 배정)</option>
+                        <optgroup label="KIIP (사회통합프로그램)">
+                            <option value="KIIP 5단계 이수 완료">KIIP 5단계 이수 완료</option>
+                            <option value="KIIP 4단계 합격">KIIP 4단계 합격</option>
+                            <option value="KIIP 3단계 합격">KIIP 3단계 합격</option>
+                            <option value="KIIP 2단계 합격">KIIP 2단계 합격</option>
+                            <option value="KIIP 1단계 합격">KIIP 1단계 합격</option>
+                            <option value="KIIP 0단계 합격">KIIP 0단계 합격</option>
                         </optgroup>
-                        <optgroup label="KIIP 사전평가 (점수)">
-                            <option value="사전평가 85점 이상">사전평가 85점↑ (5단계 배정)</option>
-                            <option value="사전평가 61-84점">사전평가 61~84점 (4단계 배정)</option>
-                            <option value="사전평가 41-60점">사전평가 41~60점 (3단계 배정)</option>
-                            <option value="사전평가 21-40점">사전평가 21~40점 (2단계 배정)</option>
+                        <optgroup label="KIIP 사전평가">
+                            <option value="사전평가 85점 이상">사전평가 85점↑ (5단계)</option>
+                            <option value="사전평가 61-84점">사전평가 61-84점 (4단계)</option>
+                            <option value="사전평가 41-60점">사전평가 41-60점 (3단계)</option>
+                            <option value="사전평가 21-40점">사전평가 21-40점 (2단계)</option>
                         </optgroup>
                     </select>
                 </div>
@@ -89,7 +89,7 @@
         </div>
 
         <div class="form-section">
-            <div class="section-title">⚠️ 준법 체크 및 결격 사유</div>
+            <div class="section-title">⚠️ 결격 사유 체크</div>
             <div class="row">
                 <div class="col form-group">
                     <label>형사범죄 경력</label>
@@ -109,9 +109,7 @@
         </div>
 
         <button class="btn-primary" id="run-btn">⚖️ 이규희 사무장 정밀 분석 실행</button>
-
-        <div id="status-log">v2.0.0 시스템 대기 중...</div>
-
+        <div id="status-log">시스템 로그 준비 완료...</div>
         <div id="result-box"><div id="result-content"></div></div>
     </div>
 </div>
