@@ -40,7 +40,7 @@
         <div class="section-title">📝 의뢰인 정보 입력</div>
         <div class="form-group"><label>👤 의뢰인 성명</label><input type="text" id="clientName" placeholder="의뢰인 성함"></div>
         <div class="row">
-            <div class="col form-group"><label>현재 비자 (E-9, H-2 등)</label><input type="text" id="visaType" value="H-2" placeholder="예: H-2, E-9"></div>
+            <div class="col form-group"><label>현재 비자 (E-9, H-2 등)</label><input type="text" id="visaType" value="H-2"></div>
             <div class="col form-group"><label>생년월일</label><input type="date" id="birthDate" value="1995-05-20"></div>
         </div>
         <div class="row">
@@ -78,11 +78,26 @@
 
         <div class="section-title">⚠️ 결격 사유 체크</div>
         <div class="row">
-            <div class="col form-group"><label>형사범죄 경력</label><select id="criminalRecord"><option value="없음" selected>없음</option><option value="있음">있음</option></select></div>
-            <div class="col form-group"><label>세금 체납 여부</label><select id="taxArrears"><option value="없음" selected>없음</option><option value="체납">체납 있음</option></select></div>
+            <div class="col form-group">
+                <label>형사범죄 경력</label>
+                <select id="criminalRecord">
+                    <option value="없음" selected>없음</option>
+                    <option value="있음">있음</option>
+                </select>
+            </div>
+            <div class="col form-group">
+                <label>세금 체납 여부</label>
+                <select id="taxArrears">
+                    <option value="없음" selected>없음</option>
+                    <option value="체납">체납 있음</option>
+                </select>
+            </div>
         </div>
 
-        <div class="form-group"><label>기타 특이사항</label><textarea id="details" rows="2">H-2 비자로 3년 이상 근무 중, 용접기능사 보유.</textarea></div>
+        <div class="form-group">
+            <label>기타 특이사항 (학력/자격증 등)</label>
+            <textarea id="details" rows="2">용접기능사 보유, 근무지 인구감소지역.</textarea>
+        </div>
 
         <button class="btn-primary" id="run-btn">⚖️ 이규희 사무장 정밀 분석</button>
         <div id="status-log"></div>
@@ -90,8 +105,8 @@
     </div>
 </div>
 
-<script src="config.js" defer></script>
-<script src="api.js" defer></script>
+<script src="config.js"></script>
+<script src="api.js"></script>
 <script src="main.js" defer></script>
 </body>
 </html>
