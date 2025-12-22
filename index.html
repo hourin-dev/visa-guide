@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.7</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.8</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -40,7 +40,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.1.7</span>
+        <span class="ver-badge">v1.1.8</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>비자 추천 & 체류 행정 전문가 분석</h1>
         <p>승인으로 증명하는 법무법인 대림의 정밀 비자 솔루션</p>
@@ -87,8 +87,6 @@
                         <option value="KIIP 4단계 합격">KIIP 4단계 합격</option>
                         <option value="KIIP 3단계 합격">KIIP 3단계 합격</option>
                         <option value="KIIP 2단계 합격">KIIP 2단계 합격</option>
-                        <option value="KIIP 1단계 합격">KIIP 1단계 합격</option>
-                        <option value="KIIP 0단계 합격">KIIP 0단계 합격</option>
                     </optgroup>
                 </select>
             </div>
@@ -146,7 +144,7 @@
         const file = document.getElementById('pdfFile').files[0];
         const btn = document.getElementById('upload-btn');
         if(!key || !file) return alert("API 키와 파일을 확인하세요.");
-        btn.disabled = true; log("⏳ 지침서 업로드 시작..."); updateProgress('upload', 20);
+        btn.disabled = true; log("⏳ 지침서 업로드 중..."); updateProgress('upload', 20);
         try {
             const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`, {
                 method: 'POST', headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
@@ -160,7 +158,7 @@
                 updateProgress('upload', 100);
                 document.getElementById('file-label').innerText = "동기화 완료";
                 document.getElementById('file-label').className = "status-badge status-active";
-                log("✅ 업로드 완료. 서버 인덱싱을 위해 잠시 대기하세요.");
+                log("✅ 업로드 완료. 서버 처리 대기 중...");
             }
         } catch(e) { log("❌ 업로드 실패: " + e.message); } finally { btn.disabled = false; }
     }
@@ -173,17 +171,21 @@
         const btn = document.getElementById('run-btn'); btn.disabled = true;
         
         let success = false;
-        // 서버 인덱싱 시간을 위해 1차 시도 전 대기 시간 대폭 연장 (8초)
-        log("⏳ 서버가 지침서를 읽고 있습니다... (약 8초 대기)");
-        await new Promise(r => setTimeout(r, 8000));
+        // 지침서 인덱싱 시간을 확보하기 위해 초기 대기 시간을 12초로 연장
+        log("⏳ 서버 데이터 동기화 중... (약 12초 소요)");
+        await new Promise(r => setTimeout(r, 12000));
 
         for(let i=1; i<=3; i++) {
-            log(`⚖️ 분석 리포트 생성 중... (시도 ${i}/3)`);
+            log(`⚖️ 비자 분석 리포트 생성 중... (시도 ${i}/3)`);
             success = await runAnalysis(i, key, clientName);
             if(success) break;
-            if(i < 3) { log(`⚠️ 응답 지연. ${i*2+3}초 후 재시도합니다...`); await new Promise(r => setTimeout(r, (i*2+3)*1000)); }
+            if(i < 3) { 
+                const waitSec = (i * 3) + 5;
+                log(`⚠️ 응답 지연. ${waitSec}초 후 다시 시도합니다...`); 
+                await new Promise(r => setTimeout(r, waitSec * 1000)); 
+            }
         }
-        if(!success) { log("❌ 최종 분석 실패. 파일 용량이 너무 크거나 보안키 할당량을 확인하세요."); }
+        if(!success) log("❌ 분석 최종 실패. 파일 용량이 너무 크거나 보안키 제한을 확인하세요.");
         btn.disabled = false;
     }
 
@@ -205,12 +207,12 @@
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{ parts: [
-                        { text: `법무법인 대림 이규희 사무장으로서 작성하세요.
-                                [의뢰인] ${dataInput.name}, ${dataInput.visa}, 소득 ${dataInput.income}만, 한국어 ${dataInput.korean}, 범죄 ${dataInput.criminal}, 체납 ${dataInput.tax}, 특이사항 ${dataInput.details}.
+                        { text: `당신은 법무법인 대림 이규희 사무장입니다. 제공된 지침서를 기반으로 리포트를 작성하세요.
+                                [의뢰인] ${dataInput.name}, 현재 ${dataInput.visa}, 소득 ${dataInput.income}만, 한국어 ${dataInput.korean}, 범죄 ${dataInput.criminal}, 체납 ${dataInput.tax}, 특이사항 ${dataInput.details}.
                                 1. "의뢰인: ${dataInput.name} 귀하" 상단 표시.
-                                2. [검토] -> [결격분석] -> [성공확률 %] 순서.
-                                3. **성공 확률: [00]%** 형식 강조.
-                                4. 별표(*) 제거, 볼드체/이모티콘 사용.` },
+                                2. [입력 요건] -> [결격 분석] -> [성공 확률 %] 순서.
+                                3. **성공 확률: [00]%** 형식 강조 필수.
+                                4. 별표(*) 삭제, 볼드체와 이모티콘 사용.` },
                         { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                     ] }],
                     safetySettings: [
@@ -219,7 +221,7 @@
                         { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
                         { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
                     ],
-                    generationConfig: { temperature: 0.2, topP: 0.8, topK: 40 }
+                    generationConfig: { temperature: 0.2, topP: 0.9 }
                 })
             });
             const data = await response.json();
