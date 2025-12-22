@@ -1,5 +1,5 @@
 const CONFIG = {
-    VERSION: "1.2.5", 
-    STORAGE_KEY: "daelim_key_v125",
-    GNI_2024: 4405.1 // 2024년 GNI 확정치
+    VERSION: "2.0.0", // 시스템 버전 v2.0.0으로 업데이트
+    STORAGE_KEY: "daelim_key_v200",
+    GNI_2024: 4405.1
 };
