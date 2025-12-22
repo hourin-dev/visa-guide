@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.1</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.2</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -42,7 +42,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.1.1</span>
+        <span class="ver-badge">v1.1.2</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>비자 추천 & 체류 행정 전문가 분석</h1>
         <p>승인으로 증명하는 법무법인 대림의 정밀 비자 솔루션</p>
@@ -133,8 +133,7 @@
         b.innerText += `> ${msg}\n`; b.scrollTop = b.scrollHeight; 
     }
 
-    // 업로드 핸들러 (Fetch API의 한계를 극복하기 위해 XMLHttpRequest 사용)
-    function handleFileUpload() {
+    async function handleFileUpload() {
         const key = document.getElementById('apiKey').value.trim();
         const fileInput = document.getElementById('pdfFile');
         const file = fileInput.files[0];
@@ -143,21 +142,28 @@
         const pBar = document.getElementById('progress-bar');
         const pText = document.getElementById('progress-text');
 
-        if(!key || !file) return alert("API 키와 PDF 파일을 모두 확인하세요.");
+        if(!key || !file) return alert("API 키와 PDF 파일을 확인하세요.");
 
         btn.disabled = true;
         wrapper.style.display = 'block';
         log("⏳ 서버 업로드 세션 초기화...");
 
-        const startUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`;
-        
-        fetch(startUrl, {
-            method: 'POST',
-            headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
-            body: JSON.stringify({ file: { display_name: file.name } })
-        })
-        .then(res => {
-            const uploadUrl = res.headers.get('x-goog-upload-url');
+        try {
+            // 세션 시작 (v1beta 사용)
+            const startResponse = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`, {
+                method: 'POST',
+                headers: {
+                    'X-Goog-Upload-Protocol': 'resumable',
+                    'X-Goog-Upload-Command': 'start',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ file: { display_name: "policy_manual.pdf" } })
+            });
+
+            if (!startResponse.ok) throw new Error(`세션 생성 실패 (HTTP ${startResponse.status})`);
+            const uploadUrl = startResponse.headers.get('x-goog-upload-url');
+
+            // 실제 파일 데이터 전송 (XHR 사용)
             const xhr = new XMLHttpRequest();
             xhr.open('POST', uploadUrl, true);
             xhr.setRequestHeader('X-Goog-Upload-Command', 'upload, finalize');
@@ -177,18 +183,18 @@
                     uploadedFileUri = response.file.uri;
                     document.getElementById('file-label').innerText = "동기화 완료";
                     document.getElementById('file-label').className = "status-badge status-active";
-                    pText.innerText = '동기화 완료! 이제 분석이 가능합니다.';
-                    log("✅ 지침서 서버 동기화 성공.");
+                    pText.innerText = '동기화 완료되었습니다.';
+                    log("✅ 지침서 서버 등록 성공.");
                 } else {
-                    log("❌ 업로드 실패: API 키 혹은 네트워크를 확인하세요.");
+                    log(`❌ 업로드 실패 (코드: ${xhr.status})`);
+                    alert("업로드 중 오류가 발생했습니다. API 키를 다시 확인해 주세요.");
                 }
             };
             xhr.send(file);
-        })
-        .catch(err => {
+        } catch (err) {
             btn.disabled = false;
-            log("❌ 세션 오류: " + err.message);
-        });
+            log("❌ 오류 발생: " + err.message);
+        }
     }
 
     async function runAnalysis() {
@@ -198,7 +204,7 @@
         const btn = document.getElementById('run-btn');
         btn.disabled = true;
         btn.innerHTML = "📊 리포트 생성 중...";
-        log("⏳ AI 행정 전문가 분석 가동...");
+        log("⏳ AI 정밀 분석 중...");
 
         try {
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
@@ -207,20 +213,11 @@
                 body: JSON.stringify({
                     contents: [{
                         parts: [
-                            { text: `당신은 법무법인 대림의 이규희 사무장입니다. 
-                                    의뢰인 성명: ${document.getElementById('clientName').value}
-                                    정보: 소득 ${document.getElementById('income').value}만원, 한국어 ${document.getElementById('koreanSkill').value}, 범죄 ${document.getElementById('criminalRecord').value}, 체납 ${document.getElementById('taxArrears').value}.
-                                    
-                                    [필수 지침]
-                                    1. 결격사유 시 최상단 경고문 배치.
-                                    2. 1순위, 2순위 추천 비자와 각 승인 확률(%) 명시.
-                                    3. 📊 [정밀 점수 산정표]를 숫자로 나열 (2024 GNI 4,405만원 기준).
-                                    4. 모든 별표(*) 제거 및 이모티콘 사용.` 
-                            },
+                            { text: `의뢰인: ${document.getElementById('clientName').value}, 소득: ${document.getElementById('income').value}만원, 한국어: ${document.getElementById('koreanSkill').value}, 범죄: ${document.getElementById('criminalRecord').value}, 체납: ${document.getElementById('taxArrears').value}. 
+                                    위 데이터를 바탕으로 비자 추천 리포트를 작성하라. 1순위, 2순위 명시 및 승인확률(%) 표기. 정밀 점수 산정표 포함.` },
                             { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                         ]
-                    }],
-                    generationConfig: { temperature: 0.1 }
+                    }]
                 })
             });
 
@@ -228,9 +225,9 @@
             const text = data.candidates[0].content.parts[0].text.replace(/\*/g, '');
             document.getElementById('result-box').style.display = 'block';
             document.getElementById('result-content').innerHTML = text.replace(/\n/g, "<br>");
-            log("✅ 리포트가 성공적으로 생성되었습니다.");
+            log("✅ 리포트 생성 성공.");
         } catch(e) {
-            log("❌ 분석 실패: " + e.message);
+            log("❌ 분석 실패.");
         } finally {
             btn.disabled = false;
             btn.innerText = "⚖️ 이규희 사무장 정밀 분석";
