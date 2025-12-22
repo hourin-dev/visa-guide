@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.0.9</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.1.0</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -50,7 +50,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.0.9</span>
+        <span class="ver-badge">v1.1.0</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>비자 추천 & 체류 행정 전문가 분석</h1>
         <p>승인으로 증명하는 법무법인 대림의 정밀 비자 솔루션</p>
@@ -172,7 +172,7 @@
                 document.getElementById('file-label').className = "status-badge status-active";
                 log("✅ 준비 완료.");
             } else {
-                throw new Error("파일 업로드 응답 데이터 없음");
+                throw new Error("파일 동기화 실패. 다시 업로드 해주세요.");
             }
         } catch(e) { 
             log("❌ 업로드 실패: " + e.message); 
@@ -205,65 +205,61 @@
         const resultBox = document.getElementById('result-box');
         const resultContent = document.getElementById('result-content');
         resultBox.style.display = 'block';
-        resultContent.innerHTML = "<div style='text-align:center; padding:20px;'>⏳ 이규희 사무장 정밀 분석 리포트를 작성 중입니다...</div>";
+        resultContent.innerHTML = "<div style='text-align:center; padding:20px;'>⏳ 법무부 지침 데이터 기반 정밀 리포트 생성 중...</div>";
 
         try {
-            updateProgress('analysis', 60);
-            // 1.5 Flash 모델을 사용하여 안정성과 응답률 확보
+            updateProgress('analysis', 50);
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{ parts: [
                         { text: `당신은 법무법인 대림의 이규희 사무장입니다. 
-                                [의뢰인 정보] 성명: ${dataInput.name}, 비자: ${dataInput.visa}, 소득: ${dataInput.income}만, 한국어: ${dataInput.korean}, 범죄경력: ${dataInput.criminal}, 체납: ${dataInput.tax}, 특이사항: ${dataInput.details}.
+                                [의뢰인 정보] 성명: ${dataInput.name}, 현재비자: ${dataInput.visa}, 전년소득: ${dataInput.income}만, 한국어: ${dataInput.korean}, 범죄경력: ${dataInput.criminal}, 체납: ${dataInput.tax}, 특이사항: ${dataInput.details}.
                                 
-                                [분석 및 리포트 가이드]
-                                1. 리포트 상단에 "의뢰인: ${dataInput.name} 귀하"를 크게 표시.
-                                2. [입력 정보 검토]: 모든 데이터를 표/리스트 형태로 요약.
-                                3. [결격 사유 진단]: 범죄경력(${dataInput.criminal})에 따른 법적 체류 제한을 최우선적으로 다룸.
-                                4. [비격 비자별 성공 확률]: E-7-4, F-2-R 등 2024 GNI(4,405만원) 기준 분석.
-                                   - **성공 확률: [00]%** 형식으로 수치 강조 필수.
-                                5. 출력 포맷: 볼드체 활용, 별표(*) 제거, 이모티콘(💡, 👨‍👩‍👧‍👦, 📊, ⚠️) 사용.` 
+                                [리포트 구성 가이드]
+                                1. 리포트 상단에 "의뢰인: ${dataInput.name} 귀하"를 크게 작성.
+                                2. [입력 정보 요건 검토] 먼저 보여줄 것.
+                                3. [결격 사유 분석] 범죄경력(${dataInput.criminal})에 따른 법적 체류 제한을 가장 먼저 경고.
+                                4. [비자별 성공 확률] E-7-4, F-2-R 등 2024 GNI(4,405만원) 기준 분석.
+                                   - **성공 확률: [00]%** 형식으로 수치 강조.
+                                5. 출력 양식: 별표(*) 제거, 볼드체 사용, 이모티콘(💡, 👨‍👩‍👧‍👦, 📊, ⚠️) 사용.` 
                         },
                         { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                     ] }],
-                    // 안전 설정 해제하여 지침서 내용이 차단되지 않게 함
+                    // 안전 필터로 인해 응답이 빈값으로 오는 경우를 방지하기 위해 BLOCK_NONE 설정 적용
                     safetySettings: [
                         { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
                         { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
                         { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
                         { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
                     ],
-                    generationConfig: { temperature: 0.1, maxOutputTokens: 3000 }
+                    generationConfig: { temperature: 0.1, maxOutputTokens: 4096 }
                 })
             });
 
             const data = await response.json();
-            updateProgress('analysis', 90);
+            updateProgress('analysis', 80);
             
-            // 데이터 추출 경로 세분화 및 대체 텍스트 처리
-            const candidate = data.candidates?.[0];
-            const resultText = candidate?.content?.parts?.[0]?.text;
-
-            if (resultText) {
-                let formattedText = resultText.replace(/\*/g, '');
-                // % 확률 수치 디자인 강조
-                formattedText = formattedText.replace(/([0-9]{1,3}%)/g, "<span style='color:var(--accent); font-size:1.4rem; font-weight:800; border-bottom:2px solid var(--accent);'>$1</span>");
-                resultContent.innerHTML = formattedText.replace(/\n/g, "<br>");
+            // API 응답 구조 데이터 존재 여부 정밀 확인
+            if (data && data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts) {
+                let text = data.candidates[0].content.parts[0].text.replace(/\*/g, '');
+                // 확률 수치 가독성 강조 처리
+                text = text.replace(/([0-9]{1,3}%)/g, "<span style='color:var(--accent); font-size:1.4rem; font-weight:800; border-bottom:2px solid var(--accent);'>$1</span>");
+                resultContent.innerHTML = text.replace(/\n/g, "<br>");
                 updateProgress('analysis', 100);
-                log(`✅ 분석 완료.`);
+                log(`✅ 분석 완료: ${dataInput.name} 귀하`);
             } else {
-                // API는 성공했지만 내용이 비어있는 경우 (필터링 등)
-                const finishReason = candidate?.finishReason || "UNKNOWN";
-                throw new Error(`분석 내용 생성 중단 (사유: ${finishReason})`);
+                // 응답은 왔으나 내용이 빈 경우에 대한 상세 오류 처리
+                const reason = data.candidates?.[0]?.finishReason || "UNKNOWN";
+                throw new Error(`데이터 추출 실패 (사유: ${reason}). 지침서 내용이나 보안키를 확인하세요.`);
             }
         } catch(e) { 
-            console.error("Analysis Error:", e);
-            log(`❌ 분석 실패: ${e.message}`);
+            console.error("API Response Error:", e);
+            log(`❌ 오류: ${e.message}`);
             resultContent.innerHTML = `<div style='color:var(--accent); text-align:center; padding:30px;'>
-                <strong>⚠️ 정밀 분석 리포트 생성 오류</strong><br><br>
-                원인: ${e.message}<br>
-                해결책: 지침서 용량을 줄이거나, 보안키 할당량을 확인 후 다시 시도해 주세요.
+                <strong>⚠️ 정밀 분석 오류 발생</strong><br><br>
+                ${e.message}<br><br>
+                API 할당량 초과, 인증키 만료, 또는 파일 용량 초과가 원인일 수 있습니다.
             </div>`;
             updateProgress('analysis', 0);
         } finally { 
