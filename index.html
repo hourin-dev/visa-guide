@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.0.7</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.0.8</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -50,7 +50,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.0.7</span>
+        <span class="ver-badge">v1.0.8</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>비자 추천 & 체류 행정 전문가 분석</h1>
         <p>승인으로 증명하는 법무법인 대림의 정밀 비자 솔루션</p>
@@ -60,7 +60,7 @@
         <div class="form-group">
             <div class="label-row">
                 <label>🔐 보안 인증 (Google AI API Key)</label>
-                <label class="save-key-wrap"><input type="checkbox" id="chkSaveKey" checked onchange="saveKey()"> 인증키 저장</label>
+                <label class="save-key-wrap"><input type="checkbox" id="chkSaveKey" onchange="saveKey()"> 인증키 저장</label>
             </div>
             <input type="password" id="apiKey" placeholder="보안 키를 입력하세요" onchange="saveKey()">
         </div>
@@ -139,6 +139,7 @@
     function updateProgress(id, percent) {
         const container = document.getElementById(id + '-progress-container');
         const bar = document.getElementById(id + '-progress-bar');
+        if (!container || !bar) return;
         container.style.display = 'block';
         bar.style.width = percent + '%';
         if(percent >= 100) setTimeout(() => container.style.display = 'none', 1500);
@@ -164,13 +165,17 @@
             const res = await fetch(url, { method: 'POST', headers: { 'X-Goog-Upload-Command': 'upload, finalize', 'X-Goog-Upload-Offset': '0' }, body: file });
             const data = await res.json();
             
-            uploadedFileUri = data.file.uri;
-            updateProgress('upload', 100);
-            document.getElementById('file-label').innerText = "동기화 완료";
-            document.getElementById('file-label').className = "status-badge status-active";
-            log("✅ 준비 완료.");
+            if (data.file && data.file.uri) {
+                uploadedFileUri = data.file.uri;
+                updateProgress('upload', 100);
+                document.getElementById('file-label').innerText = "동기화 완료";
+                document.getElementById('file-label').className = "status-badge status-active";
+                log("✅ 준비 완료.");
+            } else {
+                throw new Error("파일 업로드 응답이 올바르지 않습니다.");
+            }
         } catch(e) { 
-            log("❌ 업로드 실패."); 
+            log("❌ 업로드 실패: " + e.message); 
             updateProgress('upload', 0);
         } finally { btn.disabled = false; }
     }
@@ -197,8 +202,10 @@
             details: document.getElementById('details').value
         };
 
-        document.getElementById('result-box').style.display = 'block';
-        document.getElementById('result-content').innerHTML = "⏳ 정책 지침 데이터 분석 및 리포트 작성 중입니다...";
+        const resultBox = document.getElementById('result-box');
+        const resultContent = document.getElementById('result-content');
+        resultBox.style.display = 'block';
+        resultContent.innerHTML = "<div style='text-align:center; padding:20px;'>⏳ 법무부 출입국 지침 데이터를 정밀 분석 중입니다. 잠시만 기다려 주십시오...</div>";
 
         try {
             updateProgress('analysis', 60);
@@ -211,36 +218,42 @@
                                 
                                 [리포트 구성 지침]
                                 1. 리포트 상단에 "의뢰인: ${dataInput.name} 귀하"를 크게 작성.
-                                2. [1단계: 입력 정보 요건 검토] 먼저 항목별로 깔끔하게 정리해 보여줄 것.
-                                3. [2단계: 결격 사유 분석] 범죄경력(${dataInput.criminal})에 따른 법적 제한사항을 최우선 경고하고 실무적 반려 가능성을 다룰 것.
+                                2. [1단계: 입력 정보 요건 검토] 항목별로 정리.
+                                3. [2단계: 결격 사유 분석] 범죄경력(${dataInput.criminal}) 관련 법적 제한사항 최우선 경고.
                                 4. [3단계: 비자별 성공 확률 및 점수 계산] E-7-4, F-2-R 등 2024 GNI(4,405만원) 기준 분석.
-                                   - **중요**: 각 비자별 취득 가능성을 "성공 확률: [00]%" 형태로 수치화하여 크게 강조할 것.
-                                5. 별표(*) 제거하고 볼드체와 이모티콘(💡, 👨‍👩‍👧‍👦, 📊, ⚠️) 사용.` 
+                                   - **성공 확률: [00]%** 형태의 수치를 반드시 포함하고 강조할 것.
+                                5. 별표(*) 제거, 볼드체와 이모티콘(💡, 👨‍👩‍👧‍👦, 📊, ⚠️) 사용.` 
                         },
                         { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                     ] }],
-                    generationConfig: { temperature: 0.1 }
+                    generationConfig: { temperature: 0.1, maxOutputTokens: 2048 }
                 })
             });
 
             const data = await response.json();
             updateProgress('analysis', 90);
             
-            // 결과 구조 검증 강화 (오류 수정)
-            if (data && data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts) {
-                let text = data.candidates[0].content.parts[0].text.replace(/\*/g, '');
-                // 수치 부분 강조 처리
-                text = text.replace(/([0-9]+%)/g, "<span style='color:var(--accent); font-size:1.4rem; font-weight:800;'>$1</span>");
-                document.getElementById('result-content').innerHTML = text.replace(/\n/g, "<br>");
+            // 데이터 존재 여부 정밀 확인 로직
+            if (data && data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
+                let text = data.candidates[0].content.parts[0].text;
+                text = text.replace(/\*/g, '');
+                // 확률 수치 강조 (정규식 강화)
+                text = text.replace(/([0-9]{1,3}%)/g, "<span style='color:var(--accent); font-size:1.3rem; font-weight:800; text-decoration:underline;'>$1</span>");
+                resultContent.innerHTML = text.replace(/\n/g, "<br>");
                 updateProgress('analysis', 100);
-                log(`✅ 분석 완료.`);
+                log(`✅ 분석 완료: ${dataInput.name} 귀하`);
             } else {
-                console.error("API Response Structure Error:", data);
-                throw new Error("결과 파싱 불가");
+                console.error("API Response Data:", data);
+                throw new Error("API 응답 구조에 데이터가 포함되어 있지 않습니다.");
             }
         } catch(e) { 
-            log("❌ 오류: 결과 생성에 실패했습니다.");
-            document.getElementById('result-content').innerHTML = "죄송합니다. 분석 중 오류가 발생했습니다. API 할당량 초과 혹은 업로드된 지침서 파일의 가독성을 확인해 주세요.";
+            console.error("Error Detail:", e);
+            log(`❌ 오류: ${e.message}`);
+            resultContent.innerHTML = `<div style='color:var(--accent); text-align:center;'>
+                <strong>분석 실패</strong><br>
+                ${e.message}<br>
+                (API 할당량 초과, 인증키 오류, 또는 지침서 가독성 문제일 수 있습니다.)
+            </div>`;
             updateProgress('analysis', 0);
         } finally { 
             btn.disabled = false; 
