@@ -1,44 +1,47 @@
 document.addEventListener('DOMContentLoaded', () => {
-    let uploadedFileUri = null;
-
-    // 저장된 키 로드
+    // 저장된 API 키 불러오기
     const savedKey = localStorage.getItem(CONFIG.STORAGE_KEY);
     if(savedKey) document.getElementById('apiKey').value = savedKey;
 
     document.getElementById('upload-btn').addEventListener('click', async () => {
-        const key = document.getElementById('apiKey').value.trim();
-        const file = document.getElementById('pdfFile').files[0];
-        const pCont = document.getElementById('progress-container');
+        const keyInput = document.getElementById('apiKey');
+        const fileInput = document.getElementById('pdfFile');
         const pBar = document.getElementById('progress-bar');
         const pText = document.getElementById('progress-text');
+        const pContainer = document.getElementById('progress-container');
 
-        if(!key || !file) return alert("API 키와 정책 파일을 선택해 주세요.");
+        const key = keyInput.value.trim();
+        const file = fileInput.files[0];
 
-        // 키 저장 처리
-        if(document.getElementById('chkSaveKey').checked) localStorage.setItem(CONFIG.STORAGE_KEY, key);
-        else localStorage.removeItem(CONFIG.STORAGE_KEY);
+        if(!key || !file) return alert("API 키 입력과 정책 파일 선택은 필수입니다.");
 
-        pCont.style.display = 'block';
+        // 키 저장 여부
+        if(document.getElementById('chkSaveKey').checked) {
+            localStorage.setItem(CONFIG.STORAGE_KEY, key);
+        }
+
+        pContainer.style.display = 'block';
         pBar.style.width = '0%';
         pBar.innerText = '0%';
-        pText.innerText = "서버 세션 생성 중...";
+        pText.innerText = "출입국 정책 동기화 시작 중...";
 
         try {
-            // 이제 순서대로 로드되었으므로 VisaAPI를 정상적으로 인식합니다.
-            const data = await VisaAPI.uploadPDF(key, file, (percent) => {
+            // window.VisaAPI를 통해 명확하게 호출
+            const data = await window.VisaAPI.uploadPDF(key, file, (percent) => {
                 pBar.style.width = percent + '%';
                 pBar.innerText = percent + '%';
-                pText.innerText = percent < 100 ? "구글 클라우드로 전송 중..." : "전송 완료! 정책 동기화 중...";
+                pText.innerText = percent < 100 ? `구글 서버로 전송 중...` : `전송 완료! 파일 처리 중...`;
             });
             
-            uploadedFileUri = data.file.uri;
             document.getElementById('file-label').className = "status-badge status-active";
             document.getElementById('file-label').innerText = "동기화 완료";
-            pText.innerText = "✅ 출입국 정책 동기화 성공!";
+            pText.innerText = "✅ 정책 데이터 동기화 성공!";
+            console.log("File URI:", data.file.uri);
+            
         } catch(e) {
             pText.innerText = "❌ 오류: " + e.message;
             pBar.style.background = "#c0392b";
-            console.error(e);
+            console.error("Upload Error:", e);
         }
     });
 });
