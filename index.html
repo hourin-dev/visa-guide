@@ -21,8 +21,13 @@
         .status-badge { font-size: 0.75rem; padding: 5px 12px; border-radius: 50px; color: white; font-weight: 500; }
         .status-wait { background: #7f8c8d; }
         .status-active { background: var(--success); }
-        .progress-container { width: 100%; background-color: #eee; border-radius: 10px; margin: 10px 0; display: none; height: 8px; overflow: hidden; }
-        .progress-bar { width: 0%; height: 100%; background-color: var(--success); transition: width 0.4s ease-in-out; }
+        
+        /* 프로그레스 바 애니메이션 강화 */
+        .progress-container { width: 100%; background-color: #eee; border-radius: 10px; margin: 10px 0; display: none; height: 12px; overflow: hidden; border: 1px solid #ddd; }
+        .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--success), #58d68d); transition: width 0.4s ease-in-out; position: relative; }
+        .progress-bar::after { content: ""; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background-image: linear-gradient(-45deg, rgba(255,255,255,.2) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.2) 50%, rgba(255,255,255,.2) 75%, transparent 75%, transparent); z-index: 1; background-size: 50px 50px; animation: move 2s linear infinite; }
+        @keyframes move { 0% { background-position: 0 0; } 100% { background-position: 50px 50px; } }
+
         .form-group { margin-bottom: 20px; }
         .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .label-row label { font-weight: 600; font-size: 0.9rem; }
@@ -31,6 +36,8 @@
         .row { display: flex; gap: 15px; margin-bottom: 5px; }
         .col { flex: 1; min-width: 0; }
         .btn-primary { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .btn-primary:disabled { background: #7f8c8d; cursor: wait; }
+        
         #status-log { margin-top: 20px; padding: 15px; background: #1e1e1e; color: #00ff00; font-family: monospace; font-size: 0.8rem; border-radius: 8px; display: none; max-height: 150px; overflow-y: auto; white-space: pre-wrap; }
         #result-box { margin-top: 30px; display: none; border: 1px solid #ddd; border-radius: 12px; background: #fff; border-top: 4px solid var(--primary); }
         #result-content { padding: 35px; line-height: 2.2; font-size: 1.05rem; color: #2c3e50; }
@@ -39,7 +46,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.1.9</span>
+        <span class="ver-badge">v1.2.1</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>비자 추천 & 체류 행정 전문가 분석</h1>
         <p>승인으로 증명하는 법무법인 대림의 정밀 비자 솔루션</p>
@@ -72,23 +79,17 @@
             <div class="col form-group">
                 <label>한국어 능력</label>
                 <select id="koreanSkill">
-                    <option value="미보유">미보유 / 한국어 구사 불가</option>
-                    <optgroup label="TOPIK (한국어능력시험)">
-                        <option value="TOPIK 6급">TOPIK 6급</option><option value="TOPIK 5급" selected>TOPIK 5급</option><option value="TOPIK 4급">TOPIK 4급</option><option value="TOPIK 3급">TOPIK 3급</option><option value="TOPIK 2급">TOPIK 2급</option><option value="TOPIK 1급">TOPIK 1급</option>
-                    </optgroup>
-                    <optgroup label="KIIP (사회통합프로그램)">
-                        <option value="KIIP 5단계 이수 완료">KIIP 5단계 이수 완료</option><option value="KIIP 4단계 이수">KIIP 4단계 이수</option><option value="KIIP 3단계 이수">KIIP 3단계 이수</option>
-                    </optgroup>
+                    <option value="TOPIK 5급" selected>TOPIK 5급</option>
+                    <option value="TOPIK 6급">TOPIK 6급</option>
+                    <option value="KIIP 5단계 이수 완료">KIIP 5단계 이수 완료</option>
                 </select>
             </div>
         </div>
-
-        <div class="section-title">⚠️ 결격 사유 체크</div>
         <div class="row">
             <div class="col form-group"><label>형사범죄 경력</label><select id="criminalRecord"><option value="없음">없음</option><option value="있음" selected>있음</option></select></div>
             <div class="col form-group"><label>세금 체납 여부</label><select id="taxArrears"><option value="없음" selected>없음</option><option value="있음">있음</option></select></div>
         </div>
-        <div class="form-group"><label>특이사항 (학력/자격증 등)</label><textarea id="details" rows="2">국내 전문학사, 용접기능사 보유, 인구감소지역 근무.</textarea></div>
+        <div class="form-group"><label>특이사항</label><textarea id="details" rows="2">국내 전문학사, 용접기능사 보유.</textarea></div>
         
         <button class="btn-primary" id="run-btn" onclick="startAnalysis()">⚖️ 이규희 사무장 정밀 분석</button>
         <div id="analysis-progress-container" class="progress-container"><div id="analysis-progress-bar" class="progress-bar"></div></div>
@@ -129,8 +130,11 @@
         const key = document.getElementById('apiKey').value.trim();
         const file = document.getElementById('pdfFile').files[0];
         if(!key || !file) return alert("API 키와 파일을 선택하세요.");
+        
+        document.getElementById('upload-btn').disabled = true;
         log("⏳ 서버로 파일 전송 중...");
         updateProgress('upload', 30);
+        
         try {
             const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`, {
                 method: 'POST', headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'Content-Type': 'application/json' },
@@ -141,45 +145,61 @@
             const data = await res.json();
             uploadedFileUri = data.file.uri;
             uploadedFileName = data.file.name;
-            log("✅ 업로드 완료. 서버 승인 대기 중...");
+            log("✅ 업로드 완료. 서버 인덱싱을 기다립니다.");
             updateProgress('upload', 100);
-            document.getElementById('file-label').innerText = "업로드됨";
+            document.getElementById('file-label').innerText = "서버 저장됨";
+            document.getElementById('file-label').className = "status-badge status-active";
         } catch(e) { log("❌ 업로드 실패"); }
+        finally { document.getElementById('upload-btn').disabled = false; }
     }
 
-    async function checkFileStatus(key) {
+    async function getFileState(key) {
         try {
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${uploadedFileName}?key=${key}`);
             const data = await res.json();
-            return data.state; // 'ACTIVE' 또는 'PROCESSING'
+            return data.state; 
         } catch(e) { return 'ERROR'; }
     }
 
     async function startAnalysis() {
         const key = document.getElementById('apiKey').value.trim();
         const name = document.getElementById('clientName').value.trim();
-        if(!name || !uploadedFileUri) return alert("의뢰인 성함과 지침서 업로드를 확인하세요.");
+        if(!name || !uploadedFileUri) return alert("성함 입력과 지침서 업로드를 먼저 완료해주세요.");
         
         const btn = document.getElementById('run-btn');
         btn.disabled = true;
+        btn.innerText = "🔍 법무부 출입국관리사무소 조회 중..."; // 버튼 텍스트 즉시 변경
         
-        log("⏳ 서버 분석 준비 상태 확인 중...");
-        for(let i=0; i<10; i++) { // 최대 20초간 상태 체크
-            const state = await checkFileStatus(key);
+        const resultBox = document.getElementById('result-box');
+        const resultContent = document.getElementById('result-content');
+        resultBox.style.display = 'block';
+        resultContent.innerHTML = "<div style='text-align:center; padding:20px;'><strong>⚖️ 이규희 사무장이 출입국 지침을 검토하고 있습니다.</strong><br>서버 승인 상태를 확인 중입니다. 잠시만 기다려 주세요...</div>";
+        
+        log("⏳ 정책 지침서 ACTIVE 상태 확인 시작...");
+        updateProgress('analysis', 10);
+
+        for(let i=0; i<15; i++) { 
+            const state = await getFileState(key);
             if(state === 'ACTIVE') {
-                log("✅ 서버 준비 완료. 정밀 분석을 시작합니다.");
-                await runAnalysis(key, name);
+                log("✅ 서버 승인 완료. 데이터 정밀 대조를 시작합니다.");
+                updateProgress('analysis', 40);
+                await performFinalAnalysis(key, name);
                 btn.disabled = false;
+                btn.innerText = "⚖️ 이규희 사무장 정밀 분석";
                 return;
             }
-            log(`... 서버 처리 중 (대기 ${i+1}/10)`);
+            log(`... 서버 인덱싱 중 (${i+1}/15)`);
+            updateProgress('analysis', 10 + (i * 2)); // 프로그레스 바가 조금씩 움직이게 함
             await new Promise(r => setTimeout(r, 2000));
         }
-        log("❌ 서버 응답 지연. 다시 시도해 주세요.");
+        
+        log("❌ 서버 응답 지연.");
+        resultContent.innerHTML = "서버 응답이 지연되고 있습니다. 잠시 후 버튼을 다시 눌러주세요.";
         btn.disabled = false;
+        btn.innerText = "⚖️ 이규희 사무장 정밀 분석";
     }
 
-    async function runAnalysis(key, name) {
+    async function performFinalAnalysis(key, name) {
         const dataInput = {
             name: name,
             visa: document.getElementById('visaType').value,
@@ -189,20 +209,18 @@
             tax: document.getElementById('taxArrears').value,
             details: document.getElementById('details').value
         };
-        const resultContent = document.getElementById('result-content');
-        document.getElementById('result-box').style.display = 'block';
-        updateProgress('analysis', 50);
-
+        
+        updateProgress('analysis', 70);
         try {
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${key}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{ parts: [
-                        { text: `법무법인 대림 이규희 사무장으로서 분석 리포트를 작성하라. 
-                                [의뢰인] ${dataInput.name} 귀하. 현재 ${dataInput.visa}, 소득 ${dataInput.income}만, 한국어 ${dataInput.korean}, 범죄 ${dataInput.criminal}, 체납 ${dataInput.tax}, 특이사항 ${dataInput.details}.
-                                1. [검토] -> [결격분석] -> [성공확률 %] 순서로 작성.
-                                2. 성공 확률을 **성공 확률: [00]%**로 아주 크게 강조할 것.
-                                3. 별표 제거, 볼드체와 이모티콘만 사용.` },
+                        { text: `당신은 법무법인 대림 이규희 사무장입니다. 
+                                의뢰인 [${dataInput.name}]의 성명과 정보를 지침서와 대조하여 리포트를 작성하세요.
+                                1. [검토] -> [결격사유 진단] -> [비자추천 및 성공확률 %] 순서.
+                                2. 성공 확률: **성공 확률: [00]%** 강조.
+                                3. 별표 제거, 볼드체와 이모티콘 사용.` },
                         { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
                     ] }],
                     generationConfig: { temperature: 0.1 }
@@ -212,10 +230,10 @@
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
             if(text) {
                 let formatted = text.replace(/\*/g, '').replace(/\n/g, "<br>");
-                formatted = formatted.replace(/([0-9]{1,3}%)/g, "<span style='color:var(--accent); font-size:1.5rem; font-weight:900; border-bottom:3px solid var(--accent);'>$1</span>");
-                resultContent.innerHTML = `<h3>의뢰인: ${dataInput.name} 귀하</h3><hr>${formatted}`;
+                formatted = formatted.replace(/([0-9]{1,3}%)/g, "<span style='color:var(--accent); font-size:1.6rem; font-weight:900; border-bottom:3px solid var(--accent);'>$1</span>");
+                document.getElementById('result-content').innerHTML = `<h2 style='text-align:center;'>의뢰인: ${dataInput.name} 귀하 분석 리포트</h2><hr>${formatted}`;
                 updateProgress('analysis', 100);
-                log("✅ 리포트 생성 완료.");
+                log("✅ 분석 성공.");
             }
         } catch(e) { log("❌ 분석 실패"); }
     }
