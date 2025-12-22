@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비자 추천 & 행정 전문가 분석 시스템 v1.0.3</title>
+    <title>비자 추천 & 행정 전문가 분석 시스템 v1.0.4</title>
     <style>
         :root { 
             --primary: #1a252f; --secondary: #34495e; --accent: #c0392b; 
@@ -44,7 +44,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <span class="ver-badge">v1.0.3</span>
+        <span class="ver-badge">v1.0.4</span>
         <small>법무법인 대림 (DAELIM)</small>
         <h1>비자 추천 & 체류 행정 전문가 분석</h1>
         <p>승인으로 증명하는 법무법인 대림의 정밀 비자 솔루션</p>
@@ -76,37 +76,17 @@
             <div class="col form-group">
                 <label>한국어 능력</label>
                 <select id="koreanSkill">
-                    <option value="미보유">미보유 / 한국어 구사 불가</option>
-                    <optgroup label="TOPIK (한국어능력시험)">
-                        <option value="TOPIK 6급">TOPIK 6급</option>
-                        <option value="TOPIK 5급">TOPIK 5급</option>
-                        <option value="TOPIK 4급">TOPIK 4급</option>
-                        <option value="TOPIK 3급">TOPIK 3급</option>
-                        <option value="TOPIK 2급">TOPIK 2급</option>
-                        <option value="TOPIK 1급">TOPIK 1급</option>
-                    </optgroup>
-                    <optgroup label="KIIP (사회통합프로그램)">
-                        <option value="KIIP 5단계 이수 완료">KIIP 5단계 이수 완료</option>
-                        <option value="KIIP 4단계 합격" selected>KIIP 4단계 합격</option>
-                        <option value="KIIP 3단계 합격">KIIP 3단계 합격</option>
-                        <option value="KIIP 2단계 합격">KIIP 2단계 합격</option>
-                        <option value="KIIP 1단계 합격">KIIP 1단계 합격</option>
-                        <option value="KIIP 0단계 합격">KIIP 0단계 합격</option>
-                    </optgroup>
-                    <optgroup label="KIIP 사전평가">
-                        <option value="사전평가 85점 이상 (5단계)">사전평가 85점↑ (5단계)</option>
-                        <option value="사전평가 61-84점 (4단계)">사전평가 61-84점 (4단계)</option>
-                        <option value="사전평가 41-60점 (3단계)">사전평가 41-60점 (3단계)</option>
-                        <option value="사전평가 21-40점 (2단계)">사전평가 21-40점 (2단계)</option>
-                        <option value="사전평가 1-20점 (1단계)">사전평가 1-20점 (1단계)</option>
-                    </optgroup>
+                    <option value="TOPIK 5급" selected>TOPIK 5급</option>
+                    <option value="TOPIK 6급">TOPIK 6급</option>
+                    <option value="TOPIK 4급">TOPIK 4급</option>
+                    <option value="KIIP 5단계 이수 완료">KIIP 5단계 이수 완료</option>
                 </select>
             </div>
         </div>
 
         <div class="section-title">⚠️ 결격 사유 체크</div>
         <div class="row">
-            <div class="col form-group"><label>형사범죄 경력</label><select id="criminalRecord"><option value="없음" selected>없음</option><option value="있음">있음</option></select></div>
+            <div class="col form-group"><label>형사범죄 경력</label><select id="criminalRecord"><option value="없음">없음</option><option value="있음" selected>있음</option></select></div>
             <div class="col form-group"><label>세금 체납 여부</label><select id="taxArrears"><option value="없음" selected>없음</option><option value="있음">있음</option></select></div>
         </div>
         <div class="form-group"><label>특이사항 (학력/자격증 등)</label><textarea id="details" rows="2">국내 전문학사, 용접기능사 보유, 인구감소지역 근무.</textarea></div>
@@ -162,55 +142,78 @@
 
     async function runAnalysis() {
         const key = document.getElementById('apiKey').value.trim();
+        const clientName = document.getElementById('clientName').value.trim();
+        
+        if(!key) return alert("API 키를 입력하세요.");
+        if(!clientName) return alert("의뢰인 성함을 입력하세요.");
         if(!uploadedFileUri) return alert("지침서를 먼저 업로드하세요.");
+
+        const dataInput = {
+            name: clientName,
+            visa: document.getElementById('visaType').value,
+            birth: document.getElementById('birthDate').value,
+            income: document.getElementById('income').value,
+            korean: document.getElementById('koreanSkill').value,
+            criminal: document.getElementById('criminalRecord').value,
+            tax: document.getElementById('taxArrears').value,
+            details: document.getElementById('details').value
+        };
+
         const btn = document.getElementById('run-btn');
         btn.disabled = true;
-        btn.innerHTML = "<span class='loading-dots'>법무부 출입국·외국인정책본부 조회 중</span>";
+        btn.innerHTML = "분석 중...";
         document.getElementById('result-box').style.display = 'block';
+        document.getElementById('result-content').innerHTML = "리포트를 생성하고 있습니다. 잠시만 기다려 주십시오...";
         
         try {
-            const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
-            const listData = await listRes.json();
-            const usableModels = listData.models.filter(m => m.supportedGenerationMethods.includes("generateContent")).reverse();
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${key}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [
+                        { text: `당신은 법무법인 대림의 이규희 사무장입니다.
 
-            for(let model of usableModels) {
-                log(`⏳ [${model.name.split('/')[1]}] 리포트 생성 중...`);
-                try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model.name}:generateContent?key=${key}`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [
-                                { text: `당신은 법무법인 대림의 이규희 사무장입니다. 
-                                        리포트 최상단에 "의뢰인: ${document.getElementById('clientName').value} 귀하"를 크게 표시하십시오.
-                                        
-                                        [분석 대상]: E-7-4, F-2-R, F-2-99, E-7-1, E-7-R, F-2-7 중 확률 50% 초과 비자.
-                                        
-                                        [출력 포맷]:
-                                        1. 추천 비자명은 반드시 **볼드체**로 강조.
-                                        2. 모든 문장에서 별표(*)를 제거하고 아래 이모티콘 목록 형식을 사용할 것:
-                                           - 💡 [취득 시 주요 장점]
-                                           - 👨‍👩‍👧‍👦 [가족 초청 및 부여 비자]
-                                           - 📅 [예상 체류 기간]
-                                           - 📝 [필수 제출 서류]
-                                           - 📊 [분석 및 점수 계산]: 소득점수, 숙련도점수, 한국어점수, 가점 등을 합산한 구체적인 점수표 노출.
-                                        3. 2024 GNI(4,405만원) 기준 적용.` 
-                                },
-                                { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
-                            ] }],
-                            generationConfig: { temperature: 0.1, maxOutputTokens: 8192 }
-                        })
-                    });
-                    const data = await response.json();
-                    if (data.candidates) {
-                        let text = data.candidates[0].content.parts[0].text.replace(/\*/g, '');
-                        document.getElementById('result-content').innerHTML = text.replace(/\n/g, "<br>");
-                        log(`✅ 리포트 생성 완료.`);
-                        break;
-                    }
-                } catch(e) { continue; }
+                                [의뢰인 정보 요약]
+                                - 성명: ${dataInput.name}
+                                - 현재 비자: ${dataInput.visa}
+                                - 생년월일: ${dataInput.birth}
+                                - 전년 소득: ${dataInput.income}만원
+                                - 한국어 능력: ${dataInput.korean}
+                                - 형사범죄 경력: ${dataInput.criminal}
+                                - 세금 체납 여부: ${dataInput.tax}
+                                - 특이사항: ${dataInput.details}
+
+                                [분석 지시 사항]
+                                1. 리포트 최상단에 "의뢰인: ${dataInput.name} 귀하"를 크게 표시하십시오. 절대 다른 이름을 사용하지 마십시오.
+                                2. [1단계: 입력 정보 요건 검토]: 입력된 모든 정보를 항목별로 나열하여 확인하십시오.
+                                3. [2단계: 결격 사유 분석]: 형사범죄 경력('${dataInput.criminal}') 및 세금 체납 여부를 법무부 지침에 따라 분석하십시오. 범죄 경력이 있다면 출입국관리법에 따른 비자 제한 가능성을 강력히 경고하십시오.
+                                4. [3단계: 추천 비자 정밀 분석]: E-7-4, F-2-R, F-2-7 중 가능성 있는 비자를 선택하여 2024 GNI(4,405만원) 기준 점수를 산출하십시오.
+                                5. [4단계: 실무 솔루션]: 향후 대처 방안을 제시하십시오.
+
+                                [포맷]
+                                - 텍스트 내 별표(*) 제거. 강조는 **볼드체**.
+                                - 이모티콘: 💡, 👨‍👩‍👧‍👦, 📅, 📝, 📊, ⚠️.` 
+                        },
+                        { file_data: { mime_type: "application/pdf", file_uri: uploadedFileUri } }
+                    ] }],
+                    generationConfig: { temperature: 0.1, maxOutputTokens: 8192 }
+                })
+            });
+
+            const data = await response.json();
+            if (data.candidates && data.candidates[0].content) {
+                let text = data.candidates[0].content.parts[0].text.replace(/\*/g, '');
+                document.getElementById('result-content').innerHTML = text.replace(/\n/g, "<br>");
+                log(`✅ 리포트 생성 완료.`);
+            } else {
+                throw new Error("결과 생성에 실패했습니다.");
             }
-        } catch(e) { log("❌ 실패."); }
-        finally { btn.disabled = false; btn.innerText = "⚖️ 이규희 사무장 정밀 분석"; }
+        } catch(e) { 
+            log("❌ 오류: " + e.message); 
+            document.getElementById('result-content').innerHTML = "오류가 발생했습니다: " + e.message;
+        } finally { 
+            btn.disabled = false; 
+            btn.innerText = "⚖️ 이규희 사무장 정밀 분석"; 
+        }
     }
 </script>
 </body>
