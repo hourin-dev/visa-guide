@@ -13,9 +13,7 @@
                     xhr.open('POST', uploadUrl);
                     xhr.setRequestHeader('X-Goog-Upload-Command', 'upload, finalize');
                     xhr.setRequestHeader('X-Goog-Upload-Offset', '0');
-                    xhr.upload.onprogress = (e) => {
-                        if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
-                    };
+                    xhr.upload.onprogress = (e) => { if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100)); };
                     xhr.onload = () => resolve(JSON.parse(xhr.response));
                     xhr.onerror = () => reject(new Error("네트워크 오류"));
                     xhr.send(file);
