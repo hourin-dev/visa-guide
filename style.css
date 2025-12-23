@@ -124,7 +124,7 @@ body {
     line-height: 1.6;
 }
 
-/* 9. ⭐ 분석 리포트 결과창 (가독성 핵심) ⭐ */
+/* 9. ⭐ 분석 리포트 결과창 (잘림 방지 및 가독성 최적화) ⭐ */
 #result-box { 
     display: none; 
     margin-top: 45px; 
@@ -133,16 +133,21 @@ body {
     background: #fdfdfd; 
     padding: 45px; 
     border-radius: 12px; 
-    line-height: 2.2; /* 넓은 줄 간격으로 의뢰인 가독성 확보 */
+    line-height: 2.2;   /* 넓은 줄 간격 확보 */
     font-size: 1.05rem;
     box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    
+    /* 잘림 방지 핵심 설정 */
+    height: auto !important;     /* 내용에 따라 높이 자동 조절 */
+    min-height: 600px;           /* 최소 높이 확보 */
+    overflow: visible !important; /* 넘치는 내용 잘림 방지 */
 }
 
 /* 리포트 내 빨간색 강조 */
 .red-text { 
     color: var(--red); 
     font-weight: 900; 
-    background-color: rgba(255, 0, 0, 0.05); /* 살짝 배경색을 넣어 더 눈에 띄게 */
+    background-color: rgba(255, 0, 0, 0.05); 
     padding: 2px 4px;
     border-radius: 3px;
     text-decoration: underline; 
